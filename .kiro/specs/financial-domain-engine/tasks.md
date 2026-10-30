@@ -82,21 +82,21 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     objetivo.
   - _Requisitos: R6.1, R6.4, R6.5_
 
-- [ ] 8. Créditos sin intereses
-  - [ ] 8.1 Implementar `Credit` con generación de calendario: financiado =
+- [x] 8. Créditos sin intereses
+  - [x] 8.1 Implementar `Credit` con generación de calendario: financiado =
         Original − Down repartido en N cuotas, la última absorbe el residuo;
         `OutstandingBalance` = Original − Down − Σpagos.
     - Pruebas: CP-04 (1.500.000 → 3×500.000) y CP-15 (1.000.000 →
       333.333/333.333/333.334, suma exacta).
     - _Requisitos: R7.1, R7.2, R7.3, R7.11_
-  - [ ] 8.2 Implementar `RegisterPayment`: acepta pago positivo ≤ saldo, lo aplica
+  - [x] 8.2 Implementar `RegisterPayment`: acepta pago positivo ≤ saldo, lo aplica
         a la primera cuota abierta y reparte el saldo restante en partes iguales
         entre las cuotas abiertas (la última absorbe el residuo), sin tocar pagos
         previos.
     - Pruebas: CP-05 (abono 600.000 → saldo 900.000, cuotas 450.000) y CP-06
       (abono 400.000 → saldo 1.100.000, cuotas 550.000).
     - _Requisitos: R7.4, R7.5, R7.6, R7.10_
-  - [ ] 8.3 Reglas de cierre y borde: saldo 0 → *Paid* y cuotas abiertas
+  - [x] 8.3 Reglas de cierre y borde: saldo 0 → *Paid* y cuotas abiertas
         canceladas; pago parcial no marca pagado; pago > saldo lanza; faltante en
         última cuota agrega una cuota extra un periodo después.
     - Pruebas: un caso por cada regla, incluida la cuota extra (RN-C04).
