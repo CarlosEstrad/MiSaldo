@@ -102,15 +102,15 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     - Pruebas: un caso por cada regla, incluida la cuota extra (RN-C04).
     - _Requisitos: R7.7, R7.8, R7.9, R7.10_
 
-- [ ] 9. Motor de indicadores del periodo
-  - [ ] 9.1 Implementar `PeriodIndicators`, `EngineInput` y
+- [x] 9. Motor de indicadores del periodo
+  - [x] 9.1 Implementar `PeriodIndicators`, `EngineInput` y
         `FinancialEngine.Compute`: ingreso recibido, gasto pagado (incluye cuotas
         de crédito), obligaciones, caja, reservado, dinero libre y consumo de
         presupuesto (0 si el denominador es 0). Filtra cada movimiento por su
         fecha contra el rango del periodo.
     - Pruebas: CP-01, CP-02, CP-03, CP-10, CP-13.
     - _Requisitos: R5.1–R5.9, R3.4_
-  - [ ] 9.2 Verificar que el pago de crédito se cuenta una sola vez dentro del
+  - [x] 9.2 Verificar que el pago de crédito se cuenta una sola vez dentro del
         gasto pagado y se expone en `CreditPayments` solo para trazabilidad.
     - Pruebas: CP-17 (pago de cuota 500.000 → caja 1.500.000, gasto pagado
       500.000, aparece como pago de crédito).
