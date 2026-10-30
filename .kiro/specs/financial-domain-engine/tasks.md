@@ -133,7 +133,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     con los tres términos.
   - _Requisitos: R9.1, R9.2_
 
-- [ ] 12. Cierre: cobertura y suite de aceptación
+- [x] 12. Cierre: cobertura y suite de aceptación
   - Ejecutar `dotnet test --collect:"XPlat Code Coverage"` y confirmar cobertura
     de Domain ≥ 90 %; cerrar huecos con pruebas puntuales.
   - Verificar que existen y pasan como pruebas nombradas los casos CP-01 a CP-06,
