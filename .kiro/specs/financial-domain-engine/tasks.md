@@ -74,7 +74,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     lanza.
   - _Requisitos: R4.1, R4.2, R4.3, R4.4, R4.5_
 
-- [ ] 7. Ahorro (entidades)
+- [x] 7. Ahorro (entidades)
   - Implementar `SavingsTransaction` (inmutable, aporte/retiro, objetivo opcional)
     y `SavingsGoal` con `CurrentBalance` (Σaportes − Σretiros) y
     `ProgressPercent`.
