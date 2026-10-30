@@ -1,4 +1,6 @@
 using MiSaldo.Domain.Common;
+using MiSaldo.Domain.Credits;
+using MiSaldo.Domain.Expenses;
 
 namespace MiSaldo.Domain.Engine;
 
@@ -125,4 +127,48 @@ public static class FinancialEngine
             BudgetConsumption = budgetConsumption,
         };
     }
+
+    /// <summary>
+    /// Pending debt: the sum of the outstanding balance of active credits plus
+    /// the sum of overdue unpaid obligations. An expense's obligation is overdue
+    /// when its date is before <paramref name="today"/>; future obligations are
+    /// not debt (RN-F11, D-04).
+    /// </summary>
+    public static Money PendingDebt(
+        Currency currency,
+        IEnumerable<Credit> activeCredits,
+        IEnumerable<Expense> expenses,
+        DateOnly today)
+    {
+        ArgumentNullException.ThrowIfNull(activeCredits);
+        ArgumentNullException.ThrowIfNull(expenses);
+
+        var debt = Money.Zero(currency);
+
+        foreach (var credit in activeCredits)
+        {
+            if (credit.Status == CreditStatus.Active)
+            {
+                debt += credit.OutstandingBalance();
+            }
+        }
+
+        foreach (var expense in expenses)
+        {
+            if (expense.Date < today)
+            {
+                debt += expense.Outstanding();
+            }
+        }
+
+        return debt.Round();
+    }
+
+    /// <summary>
+    /// Net worth: accumulated cash plus accumulated savings minus pending debt
+    /// (RN-F12). The caller supplies the accumulated figures; this method only
+    /// combines them, so the three terms come from the same engine.
+    /// </summary>
+    public static Money NetWorth(Money accumulatedCash, Money accumulatedSavings, Money pendingDebt) =>
+        (accumulatedCash + accumulatedSavings - pendingDebt).Round();
 }

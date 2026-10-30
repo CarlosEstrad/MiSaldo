@@ -125,7 +125,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     retiro mayor al saldo → rechazado.
   - _Requisitos: R6.2, R6.3, R10.2_
 
-- [ ] 11. Deuda pendiente y patrimonio neto
+- [x] 11. Deuda pendiente y patrimonio neto
   - Implementar `FinancialEngine.PendingDebt` (créditos activos + obligaciones
     vencidas no pagadas; las futuras no cuentan) y `FinancialEngine.NetWorth`
     (caja acumulada + ahorro acumulado − deuda).
