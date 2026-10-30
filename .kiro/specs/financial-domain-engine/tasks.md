@@ -59,7 +59,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     - Pruebas: saldo positivo con arrastre → arrastre; negativo → 0; inactivo → 0.
     - _Requisitos: R2.6 (CP-14)_
 
-- [ ] 5. Ingresos
+- [x] 5. Ingresos
   - Implementar `IncomeTransaction` con estado Planned/Received, `MarkReceived`
     (fija la fecha de recepción) y validación de valor > 0.
   - Pruebas: valor ≤ 0 lanza; planificado no se marca recibido sin fecha; marcar
