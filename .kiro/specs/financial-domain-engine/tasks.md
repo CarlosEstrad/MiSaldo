@@ -116,7 +116,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
       500.000, aparece como pago de crédito).
     - _Requisitos: R8.1, R8.2, R8.3_
 
-- [ ] 10. Validación de ahorro contra el disponible del periodo
+- [x] 10. Validación de ahorro contra el disponible del periodo
   - Implementar el servicio que valida un movimiento de ahorro usando los
     indicadores del periodo: aporte ≤ disponible (rechaza si excede), retiro ≤
     saldo del objetivo/ahorro general.
