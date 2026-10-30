@@ -1,0 +1,24 @@
+# .NET build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+
+# Test / coverage results
+[Tt]est[Rr]esults/
+coverage/
+*.coverage
+*.coverage.xml
+*.cobertura.xml
+
+# Rider / Visual Studio
+.idea/
+.vs/
+
+# Local logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

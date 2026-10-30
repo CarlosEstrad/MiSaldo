@@ -11,7 +11,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
 
 ## Tasks
 
-- [ ] 1. Preparar la solución y el andamiaje de .NET 10
+- [x] 1. Preparar la solución y el andamiaje de .NET 10
   - Crear `global.json` fijando el SDK de .NET 10 y `Directory.Build.props`
     (Nullable enable, ImplicitUsings, TreatWarningsAsErrors, LangVersion latest).
   - Crear `MiSaldo.sln`, el proyecto `src/MiSaldo.Domain` (net10.0, sin paquetes
@@ -21,21 +21,21 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     verde.
   - _Requisitos: R10.1_
 
-- [ ] 2. Tipo de dinero y moneda (Common)
-  - [ ] 2.1 Implementar `Currency` (código ISO + `DecimalPlaces`, con `Cop` y
+- [x] 2. Tipo de dinero y moneda (Common)
+  - [x] 2.1 Implementar `Currency` (código ISO + `DecimalPlaces`, con `Cop` y
         `Usd`) y `Money` (`decimal` + `Currency`) con normalización y redondeo
         bancario (`ToEven`) a los decimales de la moneda.
     - Pruebas: COP conserva 0 decimales, USD conserva 2; `Round` usa half-to-even.
     - _Requisitos: R1.1, R1.2_
-  - [ ] 2.2 Implementar `Add`, `Subtract`, operadores y comparadores de `Money`,
+  - [x] 2.2 Implementar `Add`, `Subtract`, operadores y comparadores de `Money`,
         lanzando `CurrencyMismatchException` entre monedas distintas.
     - Pruebas: operar COP con USD lanza; sumar/restar misma moneda es correcto.
     - _Requisitos: R1.3, R10.2_
-  - [ ] 2.3 Garantizar que acumular en `decimal` y redondear el total no pierde
+  - [x] 2.3 Garantizar que acumular en `decimal` y redondear el total no pierde
         ni crea dinero (prueba de propiedad sobre varios montos).
     - _Requisitos: R1.4, R10.2_
 
-- [ ] 3. Jerarquía de excepciones de dominio
+- [x] 3. Jerarquía de excepciones de dominio
   - Crear `DomainException` base y los subtipos: `NonPositiveAmountException`,
     `CurrencyMismatchException`, `PaymentExceedsBalanceException`,
     `WithdrawalExceedsSavingsException`, `SavingsExceedsAvailableException`,
@@ -43,18 +43,18 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
   - Pruebas: cada subtipo hereda de `DomainException` y conserva su mensaje.
   - _Requisitos: R10.2_
 
-- [ ] 4. Periodo financiero y calendario
-  - [ ] 4.1 Implementar `FinancialPeriod` (tipo, fechas inmutables, `Contains`,
+- [x] 4. Periodo financiero y calendario
+  - [x] 4.1 Implementar `FinancialPeriod` (tipo, fechas inmutables, `Contains`,
         `StatusOn(today)` → Planned/Active/Overdue/Closed, `Close()`), rechazando
         rango inválido con `InvalidPeriodRangeException`.
     - Pruebas: los cuatro estados según la fecha de referencia; fin < inicio lanza.
     - _Requisitos: R2.1, R2.2, R2.3, R2.5_
-  - [ ] 4.2 Implementar `PeriodSettings` y `PeriodCalendar.RangeFor` para semanal
+  - [x] 4.2 Implementar `PeriodSettings` y `PeriodCalendar.RangeFor` para semanal
         (RN-P01), quincenal (RN-P02, incluido A→B−1 / B→A−1) y mensual (RN-P03,
         día 1–28).
     - Pruebas: un caso por cada tipo, con los bordes de la regla quincenal.
     - _Requisitos: R2.4_
-  - [ ] 4.3 Exponer el arrastre del periodo cerrado: positivo si está activo,
+  - [x] 4.3 Exponer el arrastre del periodo cerrado: positivo si está activo,
         cero si es negativo o el arrastre está inactivo.
     - Pruebas: saldo positivo con arrastre → arrastre; negativo → 0; inactivo → 0.
     - _Requisitos: R2.6 (CP-14)_

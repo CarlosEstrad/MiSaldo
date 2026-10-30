@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>MiSaldo.Domain</RootNamespace>
+    <AssemblyName>MiSaldo.Domain</AssemblyName>
+  </PropertyGroup>
+
+</Project>
