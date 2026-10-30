@@ -66,7 +66,7 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
     recibido fija la fecha.
   - _Requisitos: R3.1, R3.2, R3.3, R3.4 (CP-13)_
 
-- [ ] 6. Gastos y pagos
+- [x] 6. Gastos y pagos
   - Implementar `ExpensePayment` (inmutable, valor > 0) y `Expense` con
     `TotalPaid`, `Outstanding` = max(0, presupuestado − pagado), `Status`
     derivado (Pending/Partial/Paid) y `AddPayment`.
