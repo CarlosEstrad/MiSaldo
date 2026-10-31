@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/MiSaldo.Domain/MiSaldo.Domain.csproj" />
+    <Project Path="src/MiSaldo.Infrastructure/MiSaldo.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/MiSaldo.Domain.Tests/MiSaldo.Domain.Tests.csproj" />
