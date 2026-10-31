@@ -19,6 +19,9 @@ public sealed class ExpensePaymentConfiguration : IEntityTypeConfiguration<Expen
             .HasColumnName("value_amount")
             .HasColumnType("numeric(18,2)");
 
+        builder.ToTable(t => t.HasCheckConstraint(
+            "ck_expense_payment_value_positive", "value_amount > 0"));
+
         // Foreign key to the owning expense (shadow property set by the Expense config).
         builder.Property<Guid>("ExpenseId");
         builder.HasIndex("ExpenseId");

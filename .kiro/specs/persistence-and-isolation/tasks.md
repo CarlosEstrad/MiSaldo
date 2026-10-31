@@ -42,12 +42,12 @@ compilación y pruebas sin base de datos.
     devuelve entidades del usuario actual; crear asigna el `UserId` correcto.
   - _Requisitos: R3.1, R3.2, R3.3, R3.4_
 
-- [ ] 4. Migración inicial y restricciones de integridad
-  - [ ] 4.1 Generar la migración inicial con todas las tablas de F1, llaves
+- [x] 4. Migración inicial y restricciones de integridad
+  - [x] 4.1 Generar la migración inicial con todas las tablas de F1, llaves
         foráneas, `CHECK` de montos, token de concurrencia (`xmin`) e índices
         por `UserId`.
     - _Requisitos: R5.1, R5.2, R6.1, R6.3_
-  - [ ] 4.2 Agregar al esquema el EXCLUDE de no solapamiento de periodos por
+  - [x] 4.2 Agregar al esquema el EXCLUDE de no solapamiento de periodos por
         usuario, el índice único de categorías por usuario sin mayúsculas y el
         `CHECK` de fin ≥ inicio de periodo.
     - _Requisitos: R5.3, R5.4, R5.5_

@@ -23,6 +23,9 @@ public sealed class IncomeTransactionConfiguration : IEntityTypeConfiguration<In
             .HasColumnName("value_amount")
             .HasColumnType("numeric(18,2)");
 
+        builder.ToTable(t => t.HasCheckConstraint(
+            "ck_income_value_positive", "value_amount > 0"));
+
         FinancialEntityConfig.AddUserScopedFields(builder);
     }
 }

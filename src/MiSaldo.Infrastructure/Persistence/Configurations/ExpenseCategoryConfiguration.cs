@@ -17,8 +17,8 @@ public sealed class ExpenseCategoryConfiguration : IEntityTypeConfiguration<Expe
 
         FinancialEntityConfig.AddUserScopedFields(builder);
 
-        // Unique category name per user, case-insensitive (RF-CAT-04). The
-        // case-insensitive expression index is added in the migration task.
-        builder.HasIndex("UserId", nameof(ExpenseCategory.Name)).IsUnique();
+        // The unique category name per user is case-insensitive (RF-CAT-04),
+        // implemented as an expression index on lower(Name) via raw SQL in the
+        // migration, since EF cannot express it in the model.
     }
 }

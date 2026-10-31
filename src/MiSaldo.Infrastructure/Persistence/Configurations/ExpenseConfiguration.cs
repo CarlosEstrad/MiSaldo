@@ -22,6 +22,9 @@ public sealed class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
             .HasColumnName("budgeted_amount")
             .HasColumnType("numeric(18,2)");
 
+        builder.ToTable(t => t.HasCheckConstraint(
+            "ck_expense_budget_positive", "budgeted_amount > 0"));
+
         // Map the read-only payments collection through its backing field so the
         // aggregate keeps its encapsulation (domain exposes IReadOnlyList).
         builder.HasMany(e => e.Payments)

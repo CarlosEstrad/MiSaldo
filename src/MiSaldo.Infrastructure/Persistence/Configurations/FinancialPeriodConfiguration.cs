@@ -17,6 +17,10 @@ public sealed class FinancialPeriodConfiguration : IEntityTypeConfiguration<Fina
         builder.Property(p => p.IsClosed);
         builder.Property(p => p.CarryOverEnabled);
 
+        // End date must not precede start date (RNF-DAT-05, R5.5).
+        builder.ToTable(t => t.HasCheckConstraint(
+            "ck_period_end_after_start", "\"EndDate\" >= \"StartDate\""));
+
         FinancialEntityConfig.AddUserScopedFields(builder);
     }
 }
