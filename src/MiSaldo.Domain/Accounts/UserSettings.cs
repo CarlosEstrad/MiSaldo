@@ -11,6 +11,16 @@ namespace MiSaldo.Domain.Accounts;
 /// </summary>
 public sealed class UserSettings
 {
+    // Parameterless constructor for ORM materialization. The ORM sets the
+    // mapped properties, including the PeriodSettings complex value, after
+    // construction; application code uses the public constructor below.
+    private UserSettings()
+    {
+        PrimaryCurrency = Currency.Cop;
+        Language = string.Empty;
+        PeriodSettings = new PeriodSettings();
+    }
+
     public UserSettings(
         Guid id,
         Guid userId,

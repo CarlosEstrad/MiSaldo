@@ -15,10 +15,10 @@ tarea como completada solo cuando compila y sus pruebas pasan.
   - Verificar con `dotnet build`.
   - _Requisitos: R1.1, R2.3_
 
-- [ ] 2. DbContext y configuraciones de entidad
-  - [ ] 2.1 Implementar `MiSaldoDbContext` con los `DbSet` de F1 y `ICurrentUser`.
+- [x] 2. DbContext y configuraciones de entidad
+  - [x] 2.1 Implementar `MiSaldoDbContext` con los `DbSet` de F1 y `ICurrentUser`.
     - _Requisitos: R1.2_
-  - [ ] 2.2 Implementar `MoneyConverter` y una `IEntityTypeConfiguration<T>` por
+  - [x] 2.2 Implementar `MoneyConverter` y una `IEntityTypeConfiguration<T>` por
         entidad: tipos `numeric(18,2)`, `date`, `timestamptz`; campos base
         (`Id`, `UserId`, `CreatedAt`, `UpdatedAt`); mapeo de `Expense` con su
         colección de pagos por campo de respaldo.
