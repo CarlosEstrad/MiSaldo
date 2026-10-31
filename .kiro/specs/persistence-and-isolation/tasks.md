@@ -79,7 +79,7 @@ compilación y pruebas sin base de datos.
     RLS lo impide.
   - _Requisitos: R4.3, R4.4_
 
-- [ ] 9. 🐳 Verificar restricciones, idempotencia y multi-dispositivo
+- [x] 9. 🐳 Verificar restricciones, idempotencia y multi-dispositivo
   - Pruebas: periodos solapados del mismo usuario rechazados (RF-PRD-03);
     categoría duplicada por usuario rechazada (RF-CAT-04); fin < inicio
     rechazado; mismo pago con la misma clave de idempotencia → una sola fila
