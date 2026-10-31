@@ -334,6 +334,10 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("UserId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasFilter("\"IdempotencyKey\" IS NOT NULL");
+
                     b.ToTable("expense_payments", null, t =>
                         {
                             t.HasCheckConstraint("ck_expense_payment_value_positive", "value_amount > 0");

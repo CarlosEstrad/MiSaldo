@@ -26,9 +26,18 @@ public sealed class ExpensePaymentConfiguration : IEntityTypeConfiguration<Expen
         builder.Property<Guid>("ExpenseId");
         builder.HasIndex("ExpenseId");
 
-        // Idempotency key: the same payment sent twice with the same key is one row (RNF-DAT-03).
         builder.Property<string>("IdempotencyKey").HasMaxLength(128);
 
+        // Adds the UserId/CreatedAt/UpdatedAt and concurrency shadow fields;
+        // the idempotency index below depends on UserId existing.
         FinancialEntityConfig.AddUserScopedFields(builder);
+
+        // Idempotency key: the same payment sent twice with the same key must be
+        // a single row (RNF-DAT-03). A partial unique index over
+        // (UserId, IdempotencyKey) enforces it only when a key is present, so
+        // payments without a key are unaffected.
+        builder.HasIndex("UserId", "IdempotencyKey")
+            .IsUnique()
+            .HasFilter("\"IdempotencyKey\" IS NOT NULL");
     }
 }

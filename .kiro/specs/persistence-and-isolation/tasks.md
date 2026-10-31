@@ -58,11 +58,11 @@ compilación y pruebas sin base de datos.
     `SET app.user_id` por unidad de trabajo; rol de app sin `BYPASSRLS`.
   - _Requisitos: R4.1, R4.2_
 
-- [ ] 6. Auditoría e idempotencia
-  - [ ] 6.1 `AuditingInterceptor`: llena `CreatedAt`/`UpdatedAt` y escribe
+- [x] 6. Auditoría e idempotencia
+  - [x] 6.1 `AuditingInterceptor`: llena `CreatedAt`/`UpdatedAt` y escribe
         `AuditLog` (quién, cuándo, antes/después) en cada cambio de movimiento.
     - _Requisitos: R6.2_
-  - [ ] 6.2 Idempotencia de pagos: `IdempotencyKey` con índice único por
+  - [x] 6.2 Idempotencia de pagos: `IdempotencyKey` con índice único por
         (usuario, clave); inserción del pago en transacción.
     - _Requisitos: R7.1, R7.3_
 

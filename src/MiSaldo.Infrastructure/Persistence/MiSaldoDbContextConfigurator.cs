@@ -20,7 +20,9 @@ public static class MiSaldoDbContextConfigurator
 
         builder
             .UseNpgsql(connectionString)
-            .AddInterceptors(new RlsConnectionInterceptor(currentUser));
+            .AddInterceptors(
+                new RlsConnectionInterceptor(currentUser),
+                new AuditingInterceptor(currentUser));
 
         return builder;
     }
