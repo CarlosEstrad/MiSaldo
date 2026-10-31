@@ -87,7 +87,7 @@ compilación y pruebas sin base de datos.
     concurrencia optimista falla de forma controlada.
   - _Requisitos: R5.3, R5.4, R5.5, R6.1, R7.2, R8.1, R8.2_
 
-- [ ] 10. Cierre: configuración, secretos y documentación
+- [x] 10. Cierre: configuración, secretos y documentación
   - Añadir `.env.example` (sin valores reales), documentar cómo correr las
     pruebas (requiere Docker) y actualizar el README/hoja de ruta.
   - Verificar la suite completa: dominio + infraestructura en verde.

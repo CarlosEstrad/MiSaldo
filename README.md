@@ -2,7 +2,7 @@
 
 Aplicación web y móvil para la gestión inteligente de las finanzas personales. Ayuda a las personas a administrar sus ingresos y gastos por periodos de pago, planificar obligaciones, controlar créditos y desarrollar el hábito del ahorro.
 
-> **Estado:** en desarrollo temprano. Actualmente está implementada la capa de dominio (motor financiero) con sus pruebas.
+> **Estado:** en desarrollo temprano. Están implementados el dominio (motor financiero) y la capa de persistencia (PostgreSQL con EF Core, aislamiento por usuario mediante filtro global y Row Level Security), ambos con sus pruebas.
 
 ## Pilares
 
@@ -36,12 +36,13 @@ Clean Architecture: las dependencias apuntan hacia el centro y el motor financie
 
 ```
 src/
-├── MiSaldo.Domain/          # Entidades y motor financiero (C# puro)
+├── MiSaldo.Domain/          # Entidades, cuentas y motor financiero (C# puro)
 ├── MiSaldo.Application/     # Casos de uso, DTOs, validaciones   (pendiente)
-├── MiSaldo.Infrastructure/  # EF Core, Cognito, SES, reportes    (pendiente)
+├── MiSaldo.Infrastructure/  # EF Core + PostgreSQL, RLS, auditoría
 └── MiSaldo.Api/             # Controladores y configuración      (pendiente)
 tests/
-└── MiSaldo.Domain.Tests/    # Pruebas xUnit de las reglas financieras
+├── MiSaldo.Domain.Tests/         # Pruebas xUnit de las reglas financieras
+└── MiSaldo.Infrastructure.Tests/ # Pruebas de persistencia (Testcontainers)
 web/                         # Angular + Ionic/Capacitor          (pendiente)
 infra/                       # Infraestructura como código        (pendiente)
 ```
@@ -62,17 +63,44 @@ infra/                       # Infraestructura como código        (pendiente)
 
 Requiere el SDK de .NET 10.
 
+Pruebas de dominio (C# puro, sin dependencias externas):
+
 ```bash
-dotnet new sln -n MiSaldo
-dotnet sln add src/MiSaldo.Domain tests/MiSaldo.Domain.Tests
+dotnet test tests/MiSaldo.Domain.Tests
+```
+
+Pruebas de persistencia (**requieren Docker corriendo**): usan Testcontainers,
+que levanta un PostgreSQL real en un contenedor, aplica las migraciones y verifica
+el aislamiento por usuario (RLS), las restricciones y la idempotencia. La primera
+corrida descarga la imagen `postgres:17-alpine`.
+
+```bash
+dotnet test tests/MiSaldo.Infrastructure.Tests
+```
+
+Toda la suite:
+
+```bash
 dotnet test
+```
+
+### Migraciones de base de datos
+
+Se usa la herramienta local `dotnet-ef` (fijada en `dotnet-tools.json`). La
+cadena de conexión se toma de la variable `MISALDO_DB` (ver `.env.example`); el
+rol de la aplicación **no** debe tener `BYPASSRLS` para que la seguridad por fila
+aplique.
+
+```bash
+dotnet tool restore
+dotnet ef database update --project src/MiSaldo.Infrastructure
 ```
 
 ## Hoja de ruta
 
 - [x] Motor de caja y dinero libre
 - [x] Créditos sin intereses con recálculo de cuotas
-- [ ] Modelo de datos en PostgreSQL y aislamiento por usuario
+- [x] Modelo de datos en PostgreSQL y aislamiento por usuario
 - [ ] Autenticación, perfil y periodos
 - [ ] Ingresos, gastos y dashboard
 - [ ] Ahorro y objetivos

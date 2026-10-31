@@ -19,6 +19,12 @@ coverage/
 # Local logs
 *.log
 
+# Secrets — never commit real environment files (RNF-SEG-08).
+# The committed template is .env.example.
+.env
+.env.*
+!.env.example
+
 # OS
 Thumbs.db
 .DS_Store
