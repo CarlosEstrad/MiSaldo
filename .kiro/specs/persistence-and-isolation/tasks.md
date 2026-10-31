@@ -52,7 +52,7 @@ compilación y pruebas sin base de datos.
         `CHECK` de fin ≥ inicio de periodo.
     - _Requisitos: R5.3, R5.4, R5.5_
 
-- [ ] 5. Row Level Security (barrera 2)
+- [x] 5. Row Level Security (barrera 2)
   - Migración SQL que habilita RLS y crea la política por `UserId` de sesión en
     cada tabla financiera; `RlsConnectionInterceptor` que ejecuta
     `SET app.user_id` por unidad de trabajo; rol de app sin `BYPASSRLS`.

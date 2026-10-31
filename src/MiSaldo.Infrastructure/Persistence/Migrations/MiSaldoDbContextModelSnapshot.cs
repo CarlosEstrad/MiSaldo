@@ -239,9 +239,6 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "Name")
-                        .IsUnique();
-
                     b.ToTable("expense_categories", (string)null);
                 });
 
