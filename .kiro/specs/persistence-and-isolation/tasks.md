@@ -1,10 +1,20 @@
-# Plan de implementación — Persistencia e aislamiento por usuario
+# Implementation Plan
 
-Cada tarea es pequeña y verificable. El orden va del andamiaje y el modelo hacia
-las dos barreras de aislamiento y, al final, las restricciones y la idempotencia.
-Las tareas marcadas con 🐳 necesitan **Docker corriendo** (Testcontainers levanta
-PostgreSQL); el resto se verifica con compilación y pruebas sin base. Marca una
-tarea como completada solo cuando compila y sus pruebas pasan.
+> Persistencia e aislamiento por usuario de MiSaldo.
+
+## Overview
+
+Este plan construye la capa de persistencia en orden: primero el andamiaje y el
+modelo (tareas 1–2), luego las dos barreras de aislamiento y las garantías de la
+base (tareas 3–6), y al final la verificación contra PostgreSQL real (tareas
+7–9) y el cierre (tarea 10).
+
+Cada tarea es pequeña y verificable. Marca una tarea como completada solo cuando
+compila y sus pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker
+corriendo** (Testcontainers levanta PostgreSQL); el resto se verifica con
+compilación y pruebas sin base de datos.
+
+## Tasks
 
 - [x] 1. Proyecto de infraestructura y entidades de cuenta
   - Crear `src/MiSaldo.Infrastructure` (net10.0) con EF Core y Npgsql, referencia
@@ -22,11 +32,10 @@ tarea como completada solo cuando compila y sus pruebas pasan.
         entidad: tipos `numeric(18,2)`, `date`, `timestamptz`; campos base
         (`Id`, `UserId`, `CreatedAt`, `UpdatedAt`); mapeo de `Expense` con su
         colección de pagos por campo de respaldo.
-    - Pruebas: el modelo se construye sin errores (`Database.EnsureCreated` en
-      SQLite in-memory NO; validación del modelo con `context.Model`).
+    - Pruebas: el modelo se construye sin errores (validación con `context.Model`).
     - _Requisitos: R1.3, R1.4, R2.1, R2.2_
 
-- [ ] 3. Filtro global por usuario (barrera 1)
+- [x] 3. Filtro global por usuario (barrera 1)
   - Aplicar `HasQueryFilter` por `UserId` a toda entidad financiera y asignar
     `UserId` desde `ICurrentUser` al crear; fallar seguro si no hay usuario.
   - Pruebas (sin base, con proveedor en memoria de EF Core): una consulta solo
@@ -71,7 +80,7 @@ tarea como completada solo cuando compila y sus pruebas pasan.
   - _Requisitos: R4.3, R4.4_
 
 - [ ] 9. 🐳 Verificar restricciones, idempotencia y multi-dispositivo
-  - Pruebas: periodos solapados del mismo usuario rechazados (CP: RF-PRD-03);
+  - Pruebas: periodos solapados del mismo usuario rechazados (RF-PRD-03);
     categoría duplicada por usuario rechazada (RF-CAT-04); fin < inicio
     rechazado; mismo pago con la misma clave de idempotencia → una sola fila
     (CP-12); dos contextos sobre la misma base ven los mismos datos (CP-16);
@@ -82,4 +91,51 @@ tarea como completada solo cuando compila y sus pruebas pasan.
   - Añadir `.env.example` (sin valores reales), documentar cómo correr las
     pruebas (requiere Docker) y actualizar el README/hoja de ruta.
   - Verificar la suite completa: dominio + infraestructura en verde.
-  - _Requisitos: R9.2, y RNF-SEG-08_
+  - _Requisitos: R9.2, RNF-SEG-08_
+
+## Task Dependency Graph
+
+```mermaid
+graph TD
+    T1[1. Proyecto e entidades de cuenta]
+    T2[2. DbContext y configuraciones]
+    T3[3. Filtro global por usuario]
+    T4[4. Migración y restricciones]
+    T5[5. Row Level Security]
+    T6[6. Auditoría e idempotencia]
+    T7[7. 🐳 Base de pruebas Testcontainers]
+    T8[8. 🐳 Verificar aislamiento CP-07]
+    T9[9. 🐳 Verificar restricciones e idempotencia]
+    T10[10. Cierre: config y documentación]
+
+    T1 --> T2
+    T2 --> T3
+    T2 --> T4
+    T3 --> T5
+    T4 --> T5
+    T4 --> T6
+    T5 --> T7
+    T6 --> T7
+    T7 --> T8
+    T7 --> T9
+    T8 --> T10
+    T9 --> T10
+```
+
+## Notes
+
+- **Orden de verificación:** las tareas 1–6 se compilan y prueban sin base de
+  datos (el modelo de EF Core se valida con `context.Model` y el filtro global
+  con el proveedor en memoria). Solo las tareas 7–9 requieren Docker, porque RLS
+  y las restricciones de PostgreSQL no existen en proveedores en memoria.
+- **Dos barreras de aislamiento:** la tarea 3 es la primera barrera (filtro de EF
+  Core) y la tarea 5 la segunda (RLS en la base). CP-07 (tarea 8) verifica que la
+  segunda barrera protege aun si la primera se omitiera.
+- **Versiones de EF Core:** todos los paquetes de EF Core quedan alineados en
+  10.0.4 para coincidir con la dependencia de Npgsql 10.0.3 y evitar conflictos
+  de carga en tiempo de ejecución.
+- **Secretos:** la cadena de conexión viene de variables de entorno / Secrets
+  Manager; nunca se commitea (RNF-SEG-08). La tarea 10 añade `.env.example` sin
+  valores reales.
+- **Saldos:** no se persisten; se recuperan los movimientos y el motor del
+  dominio los calcula (RNF-DAT-07).

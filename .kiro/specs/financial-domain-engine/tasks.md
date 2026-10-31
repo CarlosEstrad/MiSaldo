@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Plan de implementación — Dominio y motor financiero
+> Dominio y motor financiero de MiSaldo.
 
 ## Overview
 
