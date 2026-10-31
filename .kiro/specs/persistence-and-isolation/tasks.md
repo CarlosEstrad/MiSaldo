@@ -66,7 +66,7 @@ compilación y pruebas sin base de datos.
         (usuario, clave); inserción del pago en transacción.
     - _Requisitos: R7.1, R7.3_
 
-- [ ] 7. 🐳 Base de pruebas de integración con Testcontainers
+- [x] 7. 🐳 Base de pruebas de integración con Testcontainers
   - Crear `tests/MiSaldo.Infrastructure.Tests` con `Testcontainers.PostgreSql`;
     fixture que levanta PostgreSQL, aplica migraciones y expone una fábrica de
     `DbContext` con un `ICurrentUser` controlable.
