@@ -73,7 +73,7 @@ compilación y pruebas sin base de datos.
   - Verificar con una prueba de humo: insertar y leer una entidad.
   - _Requisitos: R9.1, R9.3_
 
-- [ ] 8. 🐳 Verificar el aislamiento (CP-07)
+- [x] 8. 🐳 Verificar el aislamiento (CP-07)
   - Pruebas: con datos de A y B, y la sesión fijada a A, una consulta normal y
     una consulta cruda (que ignore el filtro de EF Core) NO ven datos de B; la
     RLS lo impide.
