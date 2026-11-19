@@ -30,7 +30,7 @@ src/
     │   │   ├── ExpenseConfiguration.cs
     │   │   └── ...
     │   ├── Conversions/
-    │   │   └── MoneyConverter.cs        # Money <-> numeric(18,2) + currency
+    │   │   └── MoneyMapping.cs          # Money -> *_amount numeric(18,2) + *_currency
     │   ├── Interceptors/
     │   │   ├── AuditingInterceptor.cs   # CreatedAt/UpdatedAt + AuditLog
     │   │   └── RlsConnectionInterceptor.cs  # fija el UserId de sesión (RLS)
@@ -46,7 +46,7 @@ tests/
 | # | Decisión | Motivo |
 |---|---|---|
 | T1 | EF Core con Npgsql; una `IEntityTypeConfiguration<T>` por entidad. | Mantenibilidad; configuración aislada del `DbContext` (RNF-MAN-01). |
-| T2 | `Money` se persiste con dos columnas: `*_amount numeric(18,2)` y, donde la moneda pueda variar, `*_currency`. En F1 la moneda es la del usuario; se guarda a nivel de `UserSettings` y se reconstruye `Money` en materialización. | RNF-DAT-02; evita que el dominio dependa de EF Core (conversión vive aquí). |
+| T2 | `Money` se persiste con dos columnas: `*_amount numeric(18,2)` y, donde la moneda pueda variar, `*_currency`. En F1 la moneda es la del usuario; se guarda a nivel de `UserSettings` y se reconstruye `Money` en materialización. *Implementación:* primero un `MoneyConverter` de una columna que asumía COP; desde el spec de API, `MoneyMapping` mapea `Money` como tipo complejo en `*_amount` + `*_currency` (migración `MovementCurrency`). | RNF-DAT-02; evita que el dominio dependa de EF Core (conversión vive aquí). |
 | T3 | Filtro global `HasQueryFilter(e => e.UserId == _currentUser.UserId)` en toda entidad financiera. | Primera barrera (RNF-SEG-04). |
 | T4 | `ICurrentUser` inyectable expone `UserId`. En pruebas se controla; en la API lo llena el token (fuera de este spec). | El `UserId` nunca viene de la consulta (RF-AUT-09). |
 | T5 | RLS: cada tabla financiera con `ENABLE ROW LEVEL SECURITY` y política `USING (user_id = current_setting('app.user_id')::uuid)`. Un interceptor de conexión ejecuta `SET app.user_id` por unidad de trabajo. | Segunda barrera en la base (RNF-SEG-04, RNF-SEG-05, CP-07). |
@@ -171,7 +171,7 @@ integración de *Testing Strategy*.
 
 | Requisito | Componentes principales |
 |---|---|
-| R1 Infra/DbContext | `MiSaldoDbContext`, `Configurations/*`, `MoneyConverter` |
+| R1 Infra/DbContext | `MiSaldoDbContext`, `Configurations/*`, `MoneyMapping` |
 | R2 Identidad por usuario | campos base en configuraciones; `users` |
 | R3 Filtro global | `HasQueryFilter`, `ICurrentUser`, `SaveChanges` |
 | R4 RLS | migración SQL de RLS, `RlsConnectionInterceptor`, rol sin BYPASSRLS |

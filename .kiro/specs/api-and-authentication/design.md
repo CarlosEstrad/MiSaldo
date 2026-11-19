@@ -49,10 +49,18 @@ tests/
 | A5 | Access token stateless (claims: sub=UserId, email_verified, exp). Refresh token opaco, su **hash** se guarda en la base y rota en cada uso. | RNF-SEG-02; el access token nunca se persiste. |
 | A6 | `ICurrentUser` en la API se llena desde el claim `sub` del JWT por petición (scoped). | RF-AUT-09; reusa el aislamiento ya construido. |
 | A7 | Errores de dominio/aplicación → Problem Details vía un middleware/exception handler. | RNF-MAN-06, RNF-USA-05. |
-| A8 | Rate limiting con el middleware nativo de ASP.NET Core; política estricta en `/auth/*`. | RNF-SEG-07. |
+| A8 | Rate limiting con el middleware nativo de ASP.NET Core, ventana fija por minuto: 10 solicitudes por IP en `/auth/*` y 120 por usuario (o IP si es anónimo) en el resto; 429 con Problem Details y `Retry-After`. Configurable en `RateLimiting`. | RNF-SEG-07. |
 | A9 | Verificación de correo y recuperación: se genera un token con expiración; en F-actual el envío SES no existe, el token se expone por un canal de desarrollo (log/entorno de test) para poder probar el flujo. | Alcance sin SES; flujo verificable. |
 | A10 | Montos en DTOs como `string` decimal; conversión a `Money` en Application. | RNF-DAT-02. |
-| A11 | OpenAPI con el soporte nativo de .NET 10 (`Microsoft.AspNetCore.OpenApi`). | RNF-MAN-06. |
+| A11 | OpenAPI con el soporte nativo de .NET 10 (`Microsoft.AspNetCore.OpenApi`), servido en `/openapi/v1.json` solo en Development. | RNF-MAN-06. |
+| A12 | Autorización por defecto: una política fallback exige token en toda ruta; solo `/auth/*`, `/health` y OpenAPI son anónimas. Las rutas financieras (`/categories`, `/periods`, `/incomes`, `/expenses`, `/dashboard`) usan la política `VerifiedEmail` (claim `email_verified = true`, 403 si falta); `/profile` y `/settings` solo exigen sesión. | RF-AUT-03, RF-AUT-08. |
+| A13 | Los enums viajan por nombre en el JSON (`"Monthly"`, `"Dark"`) y los números se rechazan. | Contrato legible; solo entran valores conocidos. |
+| A14 | Al cerrar un periodo se calcula su saldo final con `FinancialEngine` y se guardan `ClosingBalance` y `CarriedOver` en el periodo. El saldo inicial de un periodo es lo que arrastró el periodo anterior cerrado. Los periodos se cierran en orden. | RN-P04 (un cerrado conserva sus cifras), RN-P05, CP-14. |
+| A15 | Reglas de escritura por periodo: ningún movimiento con fecha dentro de un periodo cerrado se crea, edita ni elimina (422 `period.closed`), y nada posterior a un periodo vencido cambia hasta cerrarlo (422 `period.overdue_pending`). | RN-P04, RF-PRD-06b, CP-21. |
+| A16 | Los pagos son inmutables: no se editan ni eliminan, y un gasto con pagos no se elimina (409 `expense.has_payments`). Prevalece RN-M08 sobre RF-GAS-06 hasta que existan los ajustes. | RN-M08. |
+| A17 | Idempotencia de pagos con el encabezado `Idempotency-Key`: un reenvío devuelve el primer pago (200 + `Idempotent-Replayed: true`); la misma clave con otro monto, fecha o gasto responde 409. Una carrera la decide el índice único. | RNF-DAT-03, CP-12. |
+| A18 | Los montos de entrada son texto decimal, positivos y con no más decimales que la moneda (sin redondeo silencioso). | RNF-DAT-02, RN-M07. |
+| A19 | Los `record` con contraseñas, tokens o correo redefinen `ToString()` (texto redactado), porque los frameworks registran los argumentos; las excepciones inesperadas se registran como `Error` y el cliente recibe un 500 genérico. | RNF-SEG-10, RNF-MAN-05. |
 
 ## Data Models
 
@@ -67,6 +75,16 @@ tests/
 
 Estas entidades llevan su migración; NO llevan `UserId` como filtro RLS de datos
 financieros (son de cuenta), pero sí se consultan por usuario.
+
+### Cambios a entidades existentes
+
+- **FinancialPeriod** — `ClosingBalance` y `CarriedOver` (`numeric(18,2)`, nulos
+  mientras está abierto), fijados al cerrar (migración `PeriodClosingFigures`).
+- **Montos** — cada `Money` se guarda en dos columnas, `*_amount` y
+  `*_currency`, mapeado como tipo complejo de EF Core (migración
+  `MovementCurrency`). Antes se asumía COP para todo.
+- **Expense / IncomeTransaction** — métodos `Update(...)` para la edición; los
+  pagos no cambian.
 
 ### Flujo
 
@@ -100,7 +118,11 @@ financieros (son de cuenta), pero sí se consultan por usuario.
 - Respuestas de error en Problem Details; validación de modelo y de dominio
   mapeada a 400/409/404 según el caso. Un recurso de otro usuario se comporta
   como inexistente (404) gracias al filtro + RLS (CP-07).
-- Paginación en listados (page/pageSize) donde aplique.
+- Los listados de ingresos y gastos se filtran por `periodId`, por `from` y `to`,
+  o por el periodo actual; no hay paginación todavía.
+- `GET /periods/current` y `GET /dashboard` sin periodo para hoy responden 404
+  `period.none_for_date` y no crean nada (CP-20); `GET /periods/proposal`
+  sugiere el rango sin guardarlo.
 
 ## Error Handling
 
@@ -110,8 +132,8 @@ financieros (son de cuenta), pero sí se consultan por usuario.
 | No autenticado / token inválido | 401 |
 | Correo no verificado en ruta financiera | 403 |
 | Recurso de otro usuario o inexistente | 404 |
-| Conflicto (correo duplicado, categoría duplicada, periodo solapado) | 409 |
-| Invariante de dominio violada no cubierta arriba | 422 |
+| Conflicto (correo duplicado, categoría duplicada, periodo solapado, periodo ya cerrado, gasto con pagos, clave de idempotencia reutilizada) | 409 |
+| Regla de periodos (cerrado, vencido pendiente, no iniciado, anterior abierto) o invariante de dominio | 422 |
 | Rate limit excedido | 429 |
 
 Las excepciones de dominio (`DomainException` y subtipos) se traducen en el
