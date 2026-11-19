@@ -142,6 +142,27 @@ cada bloque es `dotnet test` en verde con cobertura de Domain ≥ 90 %.
 
 ## Task Dependency Graph
 
+```json
+{
+  "waves": [
+    {"id": 0, "tasks": ["1"]},
+    {"id": 1, "tasks": ["2.1", "3"]},
+    {"id": 2, "tasks": ["2.2"]},
+    {"id": 3, "tasks": ["2.3"]},
+    {"id": 4, "tasks": ["4.1", "5", "6", "7"]},
+    {"id": 5, "tasks": ["4.2"]},
+    {"id": 6, "tasks": ["4.3"]},
+    {"id": 7, "tasks": ["8.1"]},
+    {"id": 8, "tasks": ["8.2"]},
+    {"id": 9, "tasks": ["8.3"]},
+    {"id": 10, "tasks": ["9.1"]},
+    {"id": 11, "tasks": ["9.2"]},
+    {"id": 12, "tasks": ["10", "11"]},
+    {"id": 13, "tasks": ["12"]}
+  ]
+}
+```
+
 ```mermaid
 graph TD
     T1[1. Solución y andamiaje .NET 10]

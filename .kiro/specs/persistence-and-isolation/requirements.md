@@ -2,7 +2,7 @@
 
 > Persistencia e aislamiento por usuario de MiSaldo.
 
-## Introducción
+## Introduction
 
 Este spec cubre la capa de persistencia de MiSaldo: el modelo de datos en
 PostgreSQL, su mapeo con Entity Framework Core y, sobre todo, el **aislamiento
@@ -46,9 +46,28 @@ pueden verificarse con un proveedor en memoria.
   en UTC (`timestamptz`) (RNF-DAT-02, RNF-DAT-06).
 - Cada requisito referencia las reglas del SRS que implementa.
 
+## Glossary
+
+- **Infraestructura:** el proyecto `MiSaldo.Infrastructure`, que persiste el
+  dominio con EF Core y Npgsql.
+- **DbContext:** `MiSaldoDbContext`, el punto de acceso a la base mediante EF Core.
+- **Filtro global:** filtro de consultas de EF Core por `UserId` (barrera 1).
+- **RLS (Row Level Security):** política de PostgreSQL que limita las filas
+  visibles según `app.user_id` (barrera 2).
+- **ICurrentUser:** abstracción que entrega el `UserId` ya resuelto a la
+  persistencia.
+- **Testcontainers:** biblioteca que levanta una PostgreSQL real y efímera para
+  las pruebas de integración.
+- **Idempotencia de pagos:** repetir un pago con la misma `IdempotencyKey` no
+  crea un segundo pago.
+- **Concurrencia optimista:** detección de modificaciones simultáneas sobre la
+  misma fila.
+- **Migración:** cambio versionado del esquema de la base.
+- **CP-xx / RNF-xx / RF-xx:** casos de aceptación y requisitos del SRS.
+
 ---
 
-## Requisitos
+## Requirements
 
 ### Requisito 1 — Proyecto de infraestructura y DbContext
 

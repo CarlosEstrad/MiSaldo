@@ -1,6 +1,6 @@
 # Diseño — Dominio y motor financiero
 
-## Visión general
+## Overview
 
 `MiSaldo.Domain` es una biblioteca de clases de C# puro sobre **.NET 10**, sin
 dependencias de infraestructura (RNF-MAN-01). Contiene las entidades
@@ -38,7 +38,7 @@ MiSaldo.sln
         └── MiSaldo.Domain.Tests.csproj  # xUnit, net10.0, referencia a Domain
 ```
 
-## Decisiones técnicas
+## Architecture
 
 | # | Decisión | Motivo |
 |---|---|---|
@@ -53,7 +53,7 @@ MiSaldo.sln
 | T9 | `Id` como `Guid` generado fuera o por fábrica inyectable en pruebas. | Determinismo en pruebas; el dominio no depende del reloj ni del RNG global. |
 | T10 | Excepciones de dominio heredan de `DomainException`. | Un único punto para distinguir errores de regla de errores técnicos. |
 
-## Componentes y tipos
+## Components and Interfaces
 
 ### Common
 
@@ -278,13 +278,27 @@ El motor filtra cada movimiento por su fecha contra el rango del periodo
 `CreditPayments` solo para trazabilidad (R8.3). `BudgetConsumption` devuelve 0
 cuando el denominador es 0 (R5.7).
 
-## Modelo de errores
+## Data Models
+
+Los modelos de datos son los tipos del dominio; el detalle de cada uno está en
+*Components and Interfaces*.
+
+- **Common:** `Money` (monto `decimal` + `Currency`), `Currency` (código ISO y
+  decimales) y la base `Entity`.
+- **Periods:** `FinancialPeriod` (tipo, fechas inmutables, estado) y `PeriodSettings`.
+- **Incomes:** `IncomeTransaction` con su estado (pendiente o recibido).
+- **Expenses:** `Expense` y `ExpensePayment` (inmutable); el estado se deriva de los pagos.
+- **Savings:** `SavingsGoal` y `SavingsTransaction` (inmutable).
+- **Credits:** `Credit`, `CreditInstallment` y `CreditPayment` (inmutable).
+- **Engine:** `EngineInput` (entrada) y `PeriodIndicators` (salida calculada, nunca almacenada).
+
+## Error Handling
 
 Todas las validaciones de regla lanzan `DomainException` o un subtipo. Los
 mensajes son neutrales (sin texto de UI): la capa de aplicación los traduce a
 `Problem Details` más adelante. El dominio no referencia archivos de traducción.
 
-## Estrategia de pruebas
+## Testing Strategy
 
 - **Framework:** xUnit sobre .NET 10. Un archivo de pruebas por agregado
   (`MoneyTests`, `PeriodTests`, `ExpenseTests`, `CreditTests`, `EngineTests`…).
@@ -297,6 +311,29 @@ mensajes son neutrales (sin texto de UI): la capa de aplicación los traduce a
 - **Cobertura:** objetivo ≥ 90 % en Domain (RNF-MAN-03), medida con
   `dotnet test --collect:"XPlat Code Coverage"` (coverlet).
 - Las pruebas no tocan red, disco ni reloj; las fechas y los `Guid` se inyectan.
+
+## Correctness Properties
+
+Propiedades que deben cumplirse para cualquier entrada válida; se verifican con
+las pruebas descritas en *Testing Strategy*.
+
+1. **Conservación del dinero:** sumar o repartir montos y luego redondear no
+   crea ni pierde dinero respecto a la suma exacta (RN-M07).
+2. **Una sola moneda:** toda operación entre monedas distintas falla con un error
+   de dominio.
+3. **Reparto exacto:** la suma de las cuotas de un crédito es igual al monto
+   financiado; la última cuota absorbe el residuo (RN-C03, CP-15).
+4. **Función pura:** el motor devuelve las mismas salidas para las mismas
+   entradas y no consulta reloj, red ni disco (RNF-DAT-07).
+5. **Saldos derivados:** ningún saldo se almacena; siempre se calcula desde los
+   movimientos.
+6. **Invariantes protegidas:** un monto no positivo, un pago mayor al saldo o un
+   retiro mayor al disponible lanzan una excepción de dominio, nunca se corrigen
+   en silencio.
+7. **Historial inmutable:** un pago o movimiento de ahorro, una vez creado, no
+   cambia (RN-M08, RN-C06).
+8. **Sin doble conteo:** un pago de crédito se cuenta una sola vez dentro de los
+   indicadores del periodo.
 
 ## Trazabilidad requisito → componente
 

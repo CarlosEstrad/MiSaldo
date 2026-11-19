@@ -2,7 +2,7 @@
 
 > API REST y autenticación propia (JWT) de MiSaldo.
 
-## Introducción
+## Introduction
 
 Este spec cubre la capa de API de MiSaldo (`MiSaldo.Api`) y una **autenticación
 propia del backend**, además de la capa de aplicación (`MiSaldo.Application`)
@@ -52,7 +52,30 @@ de forma verificable en pruebas/entorno de desarrollo).
 
 ---
 
-## Requisitos
+## Glossary
+
+- **API:** servicio HTTP `MiSaldo.Api`, expuesto bajo `/api/v1`.
+- **Caso de uso:** operación de la capa `MiSaldo.Application` que orquesta el
+  dominio y la persistencia (por ejemplo, registrar un usuario).
+- **Access token:** JWT de vida corta firmado por el backend (HS256); es
+  stateless y no se guarda.
+- **Refresh token:** token opaco de larga vida, guardado como hash, que se rota
+  en cada uso y se revoca al cerrar sesión.
+- **Token de un solo uso:** token para verificar el correo o restablecer la
+  contraseña; caduca y solo puede consumirse una vez.
+- **ICurrentUser:** abstracción que entrega el `UserId` del token a la
+  persistencia, para el filtro global por usuario y la RLS.
+- **RLS (Row Level Security):** aislamiento por fila en PostgreSQL según el
+  usuario de la sesión.
+- **Problem Details:** formato de error JSON de la RFC 7807.
+- **Rate limiting:** limitación de solicitudes por ventana de tiempo.
+- **Periodo:** intervalo financiero del usuario (creación explícita, cierre con
+  arrastre).
+- **Dinero libre:** indicador del dashboard calculado por `FinancialEngine`.
+
+---
+
+## Requirements
 
 ### Requisito 1 — Capa de aplicación (casos de uso)
 

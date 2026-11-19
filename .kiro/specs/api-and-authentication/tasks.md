@@ -113,6 +113,21 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
 
 ## Task Dependency Graph
 
+```json
+{
+  "waves": [
+    { "id": 0, "tasks": ["1"] },
+    { "id": 1, "tasks": ["2", "3"] },
+    { "id": 2, "tasks": ["4.1", "6"] },
+    { "id": 3, "tasks": ["4.2", "7"] },
+    { "id": 4, "tasks": ["5.1", "9", "10", "11.1"] },
+    { "id": 5, "tasks": ["5.2", "5.3", "11.2"] },
+    { "id": 6, "tasks": ["8"] },
+    { "id": 7, "tasks": ["12"] }
+  ]
+}
+```
+
 ```mermaid
 graph TD
     T1[1. Application y abstracciones]

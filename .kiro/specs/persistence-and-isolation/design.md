@@ -1,6 +1,6 @@
 # Diseño — Persistencia e aislamiento por usuario
 
-## Visión general
+## Overview
 
 `MiSaldo.Infrastructure` es la capa que persiste el dominio en PostgreSQL con
 Entity Framework Core y Npgsql. Depende de `MiSaldo.Domain`; el dominio nunca
@@ -41,7 +41,7 @@ tests/
     └── ...                               # pruebas de integración (CP-07, CP-12, ...)
 ```
 
-## Decisiones técnicas
+## Architecture
 
 | # | Decisión | Motivo |
 |---|---|---|
@@ -58,7 +58,7 @@ tests/
 | T11 | Unicidad de categoría por usuario sin mayúsculas con índice único sobre `(user_id, lower(name))`. | RF-CAT-04. |
 | T12 | Pruebas de integración con Testcontainers.PostgreSql; migraciones aplicadas al contenedor antes de la suite. | RLS y restricciones solo se prueban contra PostgreSQL real. |
 
-## Mapeo del dominio a tablas
+## Data Models
 
 El dominio ya define las entidades; aquí se mapean. Nombres de tabla en
 `snake_case`.
@@ -88,7 +88,7 @@ El dominio ya define las entidades; aquí se mapean. Nombres de tabla en
 > del dominio (si tienen reglas) o como modelos de infraestructura (si son solo
 > datos). Se resuelve en la fase de diseño de la tarea correspondiente.
 
-## Las dos barreras de aislamiento
+## Components and Interfaces
 
 ### Barrera 1 — filtro global (aplicación)
 
@@ -117,7 +117,7 @@ conexión, tomando el valor de `ICurrentUser`. La app usa un rol sin `BYPASSRLS`
 Resultado: aun si el filtro de EF Core se omitiera (consulta cruda, bug), la base
 no devuelve filas de otro usuario (CP-07).
 
-## Modelo de errores y seguridad
+## Error Handling
 
 - Un recurso de otro usuario se comporta como inexistente: el filtro y la RLS lo
   excluyen, y la capa superior responde 404/403 sin revelar su existencia
@@ -126,7 +126,7 @@ no devuelve filas de otro usuario (CP-07).
 - Los secretos (cadena de conexión) vienen de variables de entorno / Secrets
   Manager; nunca en el repo (RNF-SEG-08). Se incluye `.env.example` sin valores.
 
-## Estrategia de pruebas
+## Testing Strategy
 
 - **Testcontainers.PostgreSql** levanta una PostgreSQL real por suite; se aplican
   las migraciones y se corre con un rol sin `BYPASSRLS`.
@@ -140,6 +140,32 @@ no devuelve filas de otro usuario (CP-07).
 - **CP-16:** dos contextos (dos "dispositivos") sobre la misma base ven los
   mismos datos.
 - Las pruebas de dominio existentes siguen sin tocar la base.
+
+## Correctness Properties
+
+Propiedades que deben cumplirse siempre; se verifican con las pruebas de
+integración de *Testing Strategy*.
+
+1. **Aislamiento por usuario:** con la sesión fijada a un usuario, ninguna
+   consulta, ni siquiera una cruda que ignore el filtro de EF Core, devuelve
+   filas de otro usuario (CP-07, RNF-SEG-04).
+2. **Doble barrera independiente:** si falla una de las dos barreras (filtro
+   global o RLS), la otra sigue impidiendo el acceso cruzado.
+3. **Sin BYPASSRLS:** la aplicación se conecta con un rol que no puede saltarse
+   la RLS.
+4. **Propiedad asignada por el sistema:** el `UserId` de toda entidad nueva
+   proviene de `ICurrentUser`, nunca del llamador.
+5. **Idempotencia:** el mismo pago con la misma clave produce una sola fila
+   (CP-12).
+6. **Integridad en la base:** periodos solapados de un usuario, categorías
+   duplicadas por usuario y periodos con fin anterior al inicio son rechazados
+   por el esquema.
+7. **Consistencia entre dispositivos:** dos contextos sobre la misma base ven los
+   mismos datos (CP-16).
+8. **Atomicidad:** las operaciones que tocan varias tablas se confirman o se
+   revierten juntas (RNF-DAT-01).
+9. **Secretos fuera del repositorio:** la cadena de conexión viene del entorno
+   (RNF-SEG-08).
 
 ## Trazabilidad requisito → componente
 

@@ -2,7 +2,7 @@
 
 > Dominio y motor financiero de MiSaldo.
 
-## Introducción
+## Introduction
 
 Este spec cubre la capa de dominio de MiSaldo (`MiSaldo.Domain`): las entidades
 financieras, las reglas de negocio y el motor único de cálculo que produce todos
@@ -36,9 +36,27 @@ de crédito (los créditos de MiSaldo nunca tienen intereses, D-06).
 - Código, nombres de tipos y pruebas en inglés; este documento en español.
 - Trazabilidad: cada requisito referencia las reglas del SRS que implementa.
 
+## Glossary
+
+- **Dominio:** la biblioteca `MiSaldo.Domain`, C# puro sin infraestructura.
+- **Motor financiero (`FinancialEngine`):** función sin estado que calcula todos
+  los indicadores del periodo a partir de los movimientos recibidos.
+- **Money / Currency:** tipo de valor que une un monto `decimal` con su moneda y
+  sus decimales (COP = 0, USD = 2).
+- **Redondeo bancario:** redondeo *half to even* (`MidpointRounding.ToEven`).
+- **Periodo financiero:** intervalo de fechas (semanal, quincenal, mensual o
+  personalizado) sobre el que se calculan los indicadores.
+- **Arrastre:** saldo que pasa de un periodo cerrado al siguiente.
+- **Caja:** dinero realmente recibido menos el realmente pagado.
+- **Dinero libre:** dinero disponible tras descontar las obligaciones del periodo.
+- **Crédito sin intereses:** deuda en cuotas sin costo financiero (D-06).
+- **Error de dominio:** `DomainException` o subtipo; indica una regla violada.
+- **CP-xx / RN-xx / RF-xx:** casos de aceptación, reglas de negocio y requisitos
+  funcionales del SRS.
+
 ---
 
-## Requisitos
+## Requirements
 
 ### Requisito 1 — Tipo de dinero por moneda
 

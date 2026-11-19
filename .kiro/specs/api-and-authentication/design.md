@@ -1,6 +1,6 @@
 # Diseño — API REST y autenticación propia (JWT)
 
-## Visión general
+## Overview
 
 Dos capas nuevas sobre lo ya construido:
 
@@ -38,7 +38,7 @@ tests/
 └── MiSaldo.Api.Tests/                 # WebApplicationFactory + Testcontainers
 ```
 
-## Decisiones técnicas
+## Architecture
 
 | # | Decisión | Motivo |
 |---|---|---|
@@ -54,7 +54,7 @@ tests/
 | A10 | Montos en DTOs como `string` decimal; conversión a `Money` en Application. | RNF-DAT-02. |
 | A11 | OpenAPI con el soporte nativo de .NET 10 (`Microsoft.AspNetCore.OpenApi`). | RNF-MAN-06. |
 
-## Autenticación — modelo
+## Data Models
 
 ### Entidades/datos nuevos (persistencia)
 
@@ -91,7 +91,7 @@ financieros (son de cuenta), pero sí se consultan por usuario.
 - La API valida el token con los parámetros estándar; el middleware de auth puebla
   `ICurrentUser.UserId` desde `sub`.
 
-## API — forma
+## Components and Interfaces
 
 - Base `/api/v1`. Rutas públicas: `/auth/register`, `/auth/verify-email`,
   `/auth/login`, `/auth/refresh`, `/auth/forgot-password`, `/auth/reset-password`.
@@ -102,7 +102,7 @@ financieros (son de cuenta), pero sí se consultan por usuario.
   como inexistente (404) gracias al filtro + RLS (CP-07).
 - Paginación en listados (page/pageSize) donde aplique.
 
-## Mapeo de errores
+## Error Handling
 
 | Situación | HTTP |
 |---|---|
@@ -117,7 +117,7 @@ financieros (son de cuenta), pero sí se consultan por usuario.
 Las excepciones de dominio (`DomainException` y subtipos) se traducen en el
 middleware a estos códigos; nunca se devuelven como 500.
 
-## Estrategia de pruebas
+## Testing Strategy
 
 - **`MiSaldo.Api.Tests`** con `WebApplicationFactory<Program>` y una PostgreSQL de
   Testcontainers (misma infraestructura de pruebas que persistencia); las
@@ -131,6 +131,37 @@ middleware a estos códigos; nunca se devuelven como 500.
 - **Idempotencia:** doble POST de pago con la misma clave → un solo pago (CP-12).
 - Las pruebas de dominio, persistencia y API conviven; las de dominio siguen sin
   tocar red ni base.
+
+## Correctness Properties
+
+Propiedades que deben cumplirse siempre, sin importar la entrada; cada una se
+verifica con las pruebas de la sección *Testing Strategy*.
+
+1. **Aislamiento por usuario:** para cualquier petición autenticada, solo se leen
+   o modifican datos del `UserId` del token; un recurso de otro usuario responde
+   404 como si no existiera (CP-07, RNF-SEG-05).
+2. **Identidad solo desde el token:** el `UserId` nunca proviene de la ruta, la
+   query ni el cuerpo; sin token válido no hay usuario y la ruta privada responde
+   401 (RF-AUT-08, RF-AUT-09).
+3. **Rutas privadas por defecto:** toda ruta exige token salvo las marcadas
+   explícitamente como anónimas.
+4. **Tokens de un solo uso:** un token de verificación o de reset se consume una
+   sola vez; uno consumido o expirado siempre falla.
+5. **Rotación de refresh tokens:** tras un refresh, el token anterior queda
+   consumido y su reutilización es rechazada.
+6. **Respuesta uniforme:** la recuperación de contraseña y el login con
+   credenciales inválidas responden igual exista o no la cuenta, sin revelar su
+   existencia.
+7. **Secretos no expuestos:** contraseñas, hashes, tokens y la clave de firma
+   nunca aparecen en respuestas ni en logs; los errores inesperados devuelven un
+   500 genérico (RNF-SEG-08).
+8. **Idempotencia de pagos:** repetir un pago con la misma clave de idempotencia
+   produce un único pago (CP-12).
+9. **Dinero exacto:** los montos viajan como cadenas decimales y nunca se
+   convierten a punto flotante (RNF-DAT-02).
+10. **Límite de solicitudes:** superado el límite de una ventana, las peticiones
+    siguientes responden 429 hasta que la ventana se reinicia; en `/auth/*` el
+    límite es más estricto (RNF-SEG-07).
 
 ## Trazabilidad requisito → componente
 

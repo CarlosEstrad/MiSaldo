@@ -95,6 +95,23 @@ compilación y pruebas sin base de datos.
 
 ## Task Dependency Graph
 
+```json
+{
+  "waves": [
+    {"id": 0, "tasks": ["1"]},
+    {"id": 1, "tasks": ["2.1"]},
+    {"id": 2, "tasks": ["2.2"]},
+    {"id": 3, "tasks": ["3", "4.1"]},
+    {"id": 4, "tasks": ["4.2"]},
+    {"id": 5, "tasks": ["5", "6.1"]},
+    {"id": 6, "tasks": ["6.2"]},
+    {"id": 7, "tasks": ["7"]},
+    {"id": 8, "tasks": ["8", "9"]},
+    {"id": 9, "tasks": ["10"]}
+  ]
+}
+```
+
 ```mermaid
 graph TD
     T1[1. Proyecto e entidades de cuenta]
