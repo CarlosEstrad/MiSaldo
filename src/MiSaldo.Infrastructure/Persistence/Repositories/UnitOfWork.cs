@@ -29,6 +29,12 @@ public sealed class UnitOfWork : IUnitOfWork
         {
             throw new DuplicateKeyException(unique.ConstraintName, ex);
         }
+        catch (DbUpdateException ex) when (
+            ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation } exclusion)
+        {
+            // The EXCLUDE constraint on period ranges (RF-PRD-03): two requests creating overlapping periods at once.
+            throw new DuplicateKeyException(exclusion.ConstraintName, ex);
+        }
     }
 
     // Everything the action saves is committed together, or rolled back if the

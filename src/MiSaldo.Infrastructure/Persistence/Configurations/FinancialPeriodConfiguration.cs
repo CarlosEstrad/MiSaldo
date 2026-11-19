@@ -16,6 +16,9 @@ public sealed class FinancialPeriodConfiguration : IEntityTypeConfiguration<Fina
         builder.Property(p => p.EndDate).HasColumnType("date");
         builder.Property(p => p.IsClosed);
         builder.Property(p => p.CarryOverEnabled);
+        // Figures frozen when the period is closed (RN-P04); null while it is open.
+        builder.Property(p => p.ClosingBalance).HasColumnType("numeric(18,2)");
+        builder.Property(p => p.CarriedOver).HasColumnType("numeric(18,2)");
 
         // End date must not precede start date (RNF-DAT-05, R5.5).
         builder.ToTable(t => t.HasCheckConstraint(

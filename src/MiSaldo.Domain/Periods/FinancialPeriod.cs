@@ -69,8 +69,33 @@ public sealed class FinancialPeriod
         return PeriodStatus.Active;
     }
 
+    /// <summary>The final balance recorded when the period was closed; null while open (RN-P04).</summary>
+    public decimal? ClosingBalance { get; private set; }
+
+    /// <summary>The amount this period passed to the next one when it was closed; null while open (RN-P05).</summary>
+    public decimal? CarriedOver { get; private set; }
+
     /// <summary>Marks the period as closed; its figures become final (RF-PRD-06, RN-P04).</summary>
     public void Close() => IsClosed = true;
+
+    /// <summary>
+    /// Closes the period with its final balance and records what carries over
+    /// to the next period: the balance when positive and carry-over is enabled,
+    /// zero otherwise (RF-PRD-06, RN-P04, RN-P05). Returns the carried amount.
+    /// </summary>
+    public Money Close(Money finalBalance)
+    {
+        if (IsClosed)
+        {
+            throw new InvalidOperationException("The period is already closed.");
+        }
+
+        var carried = CarryOverFor(finalBalance);
+        ClosingBalance = finalBalance.Amount;
+        CarriedOver = carried.Amount;
+        IsClosed = true;
+        return carried;
+    }
 
     /// <summary>
     /// The amount that carries over to the next period given this period's final

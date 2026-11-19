@@ -536,8 +536,14 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<decimal?>("CarriedOver")
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<bool>("CarryOverEnabled")
                         .HasColumnType("boolean");
+
+                    b.Property<decimal?>("ClosingBalance")
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamptz");

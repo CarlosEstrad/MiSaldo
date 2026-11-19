@@ -86,7 +86,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Pruebas (🐳): leer/editar perfil; config persiste; categoría duplicada → 409.
   - _Requisitos: R8.1–R8.3, R9.2–R9.4_
 
-- [ ] 10. Periodos
+- [x] 10. Periodos
   - Controlador `/periods`: crear (explícito, no automático), estado, cierre con
     arrastre, rechazo de solapamiento y exigencia de cerrar vencidos.
   - Pruebas (🐳): creación explícita (CP-20); solapamiento → 409; cierre con
