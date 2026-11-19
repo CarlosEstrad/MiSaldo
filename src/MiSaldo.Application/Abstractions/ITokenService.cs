@@ -1,13 +1,20 @@
+using MiSaldo.Application.Common;
 namespace MiSaldo.Application.Abstractions;
 
 /// <summary>A signed access token and the moment it stops being valid.</summary>
-public sealed record AccessToken(string Value, DateTimeOffset ExpiresAt);
+public sealed record AccessToken(string Value, DateTimeOffset ExpiresAt)
+{
+    public override string ToString() => Redaction.Of(nameof(AccessToken));
+}
 
 /// <summary>
 /// A random opaque token (refresh, email verification, password reset). Only the
 /// <see cref="Hash"/> is stored; the <see cref="Value"/> goes to the client once.
 /// </summary>
-public sealed record OpaqueToken(string Value, string Hash);
+public sealed record OpaqueToken(string Value, string Hash)
+{
+    public override string ToString() => Redaction.Of(nameof(OpaqueToken));
+}
 
 /// <summary>
 /// Issues and hashes tokens. Access tokens are signed and stateless; opaque

@@ -3,7 +3,10 @@ using MiSaldo.Application.Common;
 
 namespace MiSaldo.Application.Accounts;
 
-public sealed record LoginCommand(string Email, string Password);
+public sealed record LoginCommand(string Email, string Password)
+{
+    public override string ToString() => Redaction.Of(nameof(LoginCommand));
+}
 
 /// <summary>
 /// Checks the credentials and opens a session (RF-AUT-04). Failed attempts are

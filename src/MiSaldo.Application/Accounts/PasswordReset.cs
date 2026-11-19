@@ -4,7 +4,10 @@ using MiSaldo.Domain.Accounts;
 
 namespace MiSaldo.Application.Accounts;
 
-public sealed record ForgotPasswordCommand(string Email);
+public sealed record ForgotPasswordCommand(string Email)
+{
+    public override string ToString() => Redaction.Of(nameof(ForgotPasswordCommand));
+}
 
 /// <summary>
 /// Starts a password reset. The answer is always success, whether or not the
@@ -73,7 +76,10 @@ public sealed class ForgotPasswordHandler
     }
 }
 
-public sealed record ResetPasswordCommand(string Token, string NewPassword);
+public sealed record ResetPasswordCommand(string Token, string NewPassword)
+{
+    public override string ToString() => Redaction.Of(nameof(ResetPasswordCommand));
+}
 
 /// <summary>
 /// Sets a new password with a valid reset token. The token works once and only

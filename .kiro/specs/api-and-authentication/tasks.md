@@ -104,7 +104,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
       se expone tal cual.
     - _Requisitos: R13.1–R13.3_
 
-- [ ] 12. 🐳 Cierre: suite de integración de extremo a extremo
+- [x] 12. 🐳 Cierre: suite de integración de extremo a extremo
   - Verificar el flujo completo por HTTP contra PostgreSQL real: auth e2e,
     autorización (401 y CP-07), y flujo financiero con dashboard.
   - Confirmar OpenAPI, Problem Details y que los logs no filtran secretos.

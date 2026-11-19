@@ -1,4 +1,5 @@
 using MiSaldo.Application.Abstractions;
+using MiSaldo.Application.Common;
 using MiSaldo.Domain.Accounts;
 
 namespace MiSaldo.Application.Accounts;
@@ -13,7 +14,10 @@ public sealed record AuthTokens(
     DateTimeOffset AccessTokenExpiresAt,
     string RefreshToken,
     DateTimeOffset RefreshTokenExpiresAt,
-    bool EmailVerified);
+    bool EmailVerified)
+{
+    public override string ToString() => Redaction.Of(nameof(AuthTokens));
+}
 
 /// <summary>Issues a new session: a signed access token plus a stored refresh token.</summary>
 internal static class SessionTokens

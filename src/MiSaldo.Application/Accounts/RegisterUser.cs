@@ -15,7 +15,10 @@ public sealed record RegisterUserCommand(
     string Country,
     string? Gender,
     bool AcceptsPrivacyPolicy,
-    bool AcceptsTerms);
+    bool AcceptsTerms)
+{
+    public override string ToString() => Redaction.Of(nameof(RegisterUserCommand));
+}
 
 public sealed record RegisterUserResult(Guid UserId);
 

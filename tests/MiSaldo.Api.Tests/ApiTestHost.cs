@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using MiSaldo.Api.Common;
 using MiSaldo.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ public sealed class ApiTestHost : IDisposable
     private readonly ApiPostgresFixture _database;
     private readonly WebApplicationFactory<Program> _factory;
 
-    public ApiTestHost(ApiPostgresFixture database, int maxFailedLoginAttempts = 5)
+    public ApiTestHost(ApiPostgresFixture database, int maxFailedLoginAttempts = 5, Action<IWebHostBuilder>? configure = null)
     {
         _database = database;
         _factory = ApiFactory.With(ApiFactory.TestSigningKey, database.AppConnectionString)
@@ -38,11 +39,18 @@ public sealed class ApiTestHost : IDisposable
                 builder.ConfigureServices(services => services
                     .AddControllers()
                     .AddApplicationPart(typeof(WhoAmITestController).Assembly));
+                configure?.Invoke(builder);
             });
         Client = _factory.CreateClient();
     }
 
     public HttpClient Client { get; }
+
+    /// <summary>The application's services, for tests that inspect the host (endpoints, OpenAPI).</summary>
+    public IServiceProvider Services => _factory.Services;
+
+    /// <summary>A new client without credentials.</summary>
+    public HttpClient CreateClient() => _factory.CreateClient();
 
     public InMemoryAccountNotifier Notifier => _factory.Services.GetRequiredService<InMemoryAccountNotifier>();
 

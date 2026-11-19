@@ -4,7 +4,10 @@ using MiSaldo.Domain.Accounts;
 
 namespace MiSaldo.Application.Accounts;
 
-public sealed record VerifyEmailCommand(string Token);
+public sealed record VerifyEmailCommand(string Token)
+{
+    public override string ToString() => Redaction.Of(nameof(VerifyEmailCommand));
+}
 
 /// <summary>
 /// Marks the email as verified when the user presents a valid verification

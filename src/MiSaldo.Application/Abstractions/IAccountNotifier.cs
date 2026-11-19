@@ -1,7 +1,11 @@
+using MiSaldo.Application.Common;
 namespace MiSaldo.Application.Abstractions;
 
 /// <summary>A single-use token to deliver to the account owner (verification or reset).</summary>
-public sealed record AccountTokenMessage(Guid UserId, string Email, string Token);
+public sealed record AccountTokenMessage(Guid UserId, string Email, string Token)
+{
+    public override string ToString() => Redaction.Of(nameof(AccountTokenMessage));
+}
 
 /// <summary>
 /// Delivers account messages such as the email verification and password reset

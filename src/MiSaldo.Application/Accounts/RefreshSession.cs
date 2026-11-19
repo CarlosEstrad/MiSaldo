@@ -3,7 +3,10 @@ using MiSaldo.Application.Common;
 
 namespace MiSaldo.Application.Accounts;
 
-public sealed record RefreshSessionCommand(string RefreshToken);
+public sealed record RefreshSessionCommand(string RefreshToken)
+{
+    public override string ToString() => Redaction.Of(nameof(RefreshSessionCommand));
+}
 
 /// <summary>
 /// Exchanges a valid refresh token for a new access token and a new refresh
@@ -101,7 +104,10 @@ public sealed class RefreshSessionHandler
     }
 }
 
-public sealed record LogoutCommand(string RefreshToken);
+public sealed record LogoutCommand(string RefreshToken)
+{
+    public override string ToString() => Redaction.Of(nameof(LogoutCommand));
+}
 
 /// <summary>
 /// Closes a session by revoking its refresh token (RF-AUT-05). Logging out is
