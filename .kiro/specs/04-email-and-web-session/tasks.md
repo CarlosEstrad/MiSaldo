@@ -49,7 +49,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     ignorar; ningún correo lleva datos financieros.
   - _Requisitos: R2.1, R2.2, R2.4–R2.6_
 
-- [ ] 4. Notificador SMTP
+- [x] 4. Notificador SMTP
   - Agregar MailKit y `SmtpAccountNotifier`: envío con el modo de seguridad
     configurado, credenciales opcionales y tiempo máximo; ante un fallo registra
     un `Warning` sin token, enlace ni contraseña, y no lanza.

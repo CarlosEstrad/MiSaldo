@@ -11,6 +11,7 @@ using MiSaldo.Application.Profile;
 using MiSaldo.Application.Settings;
 using MiSaldo.Infrastructure;
 using MiSaldo.Infrastructure.Auth;
+using MiSaldo.Infrastructure.Email;
 using MiSaldo.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -64,6 +65,7 @@ public static class ServiceRegistration
         services.AddMiSaldoPersistence(connectionString);
         services.AddMiSaldoAuthentication(jwtOptions, argon2Options);
         services.AddMiSaldoUseCases(configuration);
+        services.AddMiSaldoAccountNotifier(webClient, environment);
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -115,10 +117,6 @@ public static class ServiceRegistration
         services.AddSingleton(new RegistrationOptions());
         services.AddSingleton(configuration.GetSection("Authentication").Get<AuthenticationOptions>() ?? new AuthenticationOptions());
 
-        // No real email yet (SES arrives later): tokens stay in memory and are never logged.
-        services.AddSingleton<InMemoryAccountNotifier>();
-        services.AddSingleton<IAccountNotifier>(provider => provider.GetRequiredService<InMemoryAccountNotifier>());
-
         services.AddScoped<RegisterUserHandler>();
         services.AddScoped<VerifyEmailHandler>();
         services.AddScoped<LoginHandler>();
@@ -138,6 +136,33 @@ public static class ServiceRegistration
         services.AddScoped<ExpenseHandlers>();
         services.AddScoped<GetDashboardHandler>();
 
+        return services;
+    }
+
+    /// <summary>
+    /// SMTP when a server is configured; otherwise the in-memory notifier, which
+    /// only keeps the tokens for development and tests (R1.4, design E2).
+    /// Production without SMTP never gets here: the settings check refuses it.
+    /// </summary>
+    private static IServiceCollection AddMiSaldoAccountNotifier(
+        this IServiceCollection services, WebClientSettings webClient, IHostEnvironment environment)
+    {
+        if (webClient.Smtp.IsConfigured)
+        {
+            services.AddSingleton(provider => new AccountEmailComposer(
+                webClient.Frontend.BaseUrl!, provider.GetRequiredService<IClock>()));
+            services.AddSingleton<IAccountNotifier, SmtpAccountNotifier>();
+            return services;
+        }
+
+        if (environment.IsProduction())
+        {
+            throw new InvalidOperationException("Production needs SMTP: the in-memory notifier cannot deliver emails.");
+        }
+
+        // Development and tests: tokens stay in memory and are never logged.
+        services.AddSingleton<InMemoryAccountNotifier>();
+        services.AddSingleton<IAccountNotifier>(provider => provider.GetRequiredService<InMemoryAccountNotifier>());
         return services;
     }
 
