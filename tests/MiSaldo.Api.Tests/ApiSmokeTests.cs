@@ -13,6 +13,8 @@ using MiSaldo.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Xunit;
@@ -295,7 +297,51 @@ public class ErrorMappingTests
         Assert.Equal(code, ErrorCodes.FromTypeName(typeName));
     }
 
-    private static async Task<(int Status, JsonElement Body)> HandleAsync(Exception exception)
+    [Fact]
+    public async Task An_unexpected_error_is_logged_with_its_exception_but_not_sent_to_the_caller()
+    {
+        var logger = new ListLogger();
+        var failure = new InvalidOperationException("boom in the repository");
+
+        var (status, body) = await HandleAsync(failure, logger);
+
+        Assert.Equal(500, status);
+        Assert.DoesNotContain("boom", body.GetRawText());
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Same(failure, entry.Exception);
+    }
+
+    [Fact]
+    public async Task Expected_rejections_are_not_logged_as_errors()
+    {
+        var logger = new ListLogger();
+        await HandleAsync(new SampleRuleException(), logger);
+        await HandleAsync(new DuplicateKeyException("IX_user_profiles_Email_lower", new InvalidOperationException()), logger);
+        await HandleAsync(new ConcurrencyConflictException(new InvalidOperationException()), logger);
+
+        Assert.Equal(3, logger.Entries.Count);
+        Assert.All(logger.Entries, e => Assert.True(e.Level < LogLevel.Error, e.Level.ToString()));
+        // The constraint name, hidden from the caller, is kept for diagnosis.
+        Assert.Contains(logger.Entries, e => e.Message.Contains("IX_user_profiles_Email_lower", StringComparison.Ordinal));
+    }
+
+    private sealed record LogEntry(LogLevel Level, string Message, Exception? Exception);
+
+    private sealed class ListLogger : ILogger<ApiExceptionHandler>
+    {
+        public List<LogEntry> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add(new LogEntry(logLevel, formatter(state, exception), exception));
+    }
+
+    private static async Task<(int Status, JsonElement Body)> HandleAsync(Exception exception, ILogger<ApiExceptionHandler>? logger = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -304,7 +350,8 @@ public class ErrorMappingTests
 
         var context = new DefaultHttpContext { RequestServices = provider };
         context.Response.Body = new MemoryStream();
-        var handler = new ApiExceptionHandler(provider.GetRequiredService<IProblemDetailsService>());
+        var handler = new ApiExceptionHandler(
+            provider.GetRequiredService<IProblemDetailsService>(), logger ?? NullLogger<ApiExceptionHandler>.Instance);
 
         Assert.True(await handler.TryHandleAsync(context, exception, TestContext.Current.CancellationToken));
 
