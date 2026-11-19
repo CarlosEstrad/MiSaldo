@@ -9,8 +9,9 @@ namespace MiSaldo.Api.Common;
 /// into a Problem Details response with the status of its <see cref="ErrorType"/>
 /// and the stable error code, so clients can branch on <c>code</c>.
 /// </summary>
+// No [Produces] here: it would overwrite the content type of every result and
+// turn errors into application/json instead of application/problem+json.
 [ApiController]
-[Produces("application/json")]
 public abstract class ApiControllerBase : ControllerBase
 {
     protected ObjectResult Failure(Error error)

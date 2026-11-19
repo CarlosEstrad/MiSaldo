@@ -74,7 +74,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Pruebas (🐳): ruta privada sin token → 401; con token resuelve el usuario.
   - _Requisitos: R7.1, R7.2, R7.4, R7.5_
 
-- [ ] 8. Endpoints de autenticación
+- [x] 8. Endpoints de autenticación
   - Controlador `/auth`: register, verify-email, login, refresh, logout,
     forgot-password, reset-password, conectados a los casos de uso.
   - Pruebas (🐳): flujo registro → verificación → login → refresh → logout.

@@ -7,6 +7,8 @@ using MiSaldo.Infrastructure.Auth;
 using MiSaldo.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace MiSaldo.Api;
 
@@ -70,7 +72,15 @@ public static class ServiceRegistration
         });
         services.AddExceptionHandler<ApiExceptionHandler>();
 
-        services.AddControllers();
+        services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                // A malformed body is rejected before any use case runs (RNF-SEG-06), as Problem Details.
+                var factory = context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+                var problem = factory.CreateValidationProblemDetails(context.HttpContext, context.ModelState);
+                problem.Extensions["code"] = "request.invalid";
+                return new BadRequestObjectResult(problem) { ContentTypes = { "application/problem+json" } };
+            });
         services.AddOpenApi();
         services.AddHealthChecks();
 
