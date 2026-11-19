@@ -46,17 +46,17 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
     - Pruebas: token válido marca verificado; token consumido o expirado falla.
     - _Requisitos: R3.1–R3.4_
 
-- [ ] 5. Login, refresh, logout y recuperación
-  - [ ] 5.1 Login: verifica hash, emite access + refresh, cuenta intentos y
+- [x] 5. Login, refresh, logout y recuperación
+  - [x] 5.1 Login: verifica hash, emite access + refresh, cuenta intentos y
         bloquea; error genérico en credenciales inválidas.
     - Pruebas: login válido emite tokens; inválido da error genérico; bloqueo
       tras N intentos.
     - _Requisitos: R4.1, R4.4, R4.5_
-  - [ ] 5.2 Refresh y logout: rotación del refresh token, revocación en logout,
+  - [x] 5.2 Refresh y logout: rotación del refresh token, revocación en logout,
         rechazo de token ya usado.
     - Pruebas: refresh rota y el viejo falla; logout invalida.
     - _Requisitos: R5.1–R5.4_
-  - [ ] 5.3 Recuperación de contraseña: token de reset, respuesta uniforme,
+  - [x] 5.3 Recuperación de contraseña: token de reset, respuesta uniforme,
         reseteo que revoca sesiones.
     - Pruebas: respuesta igual exista o no el correo; reset cambia hash e
       invalida sesiones.
