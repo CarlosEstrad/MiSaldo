@@ -62,7 +62,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
       invalida sesiones.
     - _Requisitos: R6.1–R6.3_
 
-- [ ] 6. Proyecto API, pipeline y OpenAPI
+- [x] 6. Proyecto API, pipeline y OpenAPI
   - Crear `src/MiSaldo.Api` (net10.0, ref a Application e Infrastructure);
     configurar DI, JWT bearer, Problem Details, correlación, OpenAPI y `/api/v1`.
   - Verificar con `dotnet build` y el arranque de la app en una prueba de humo.

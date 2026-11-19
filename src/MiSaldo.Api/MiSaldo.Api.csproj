@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>MiSaldo.Api</RootNamespace>
+    <AssemblyName>MiSaldo.Api</AssemblyName>
+    <UserSecretsId>misaldo-api</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MiSaldo.Application\MiSaldo.Application.csproj" />
+    <ProjectReference Include="..\MiSaldo.Infrastructure\MiSaldo.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MiSaldo.Api.Tests" />
+  </ItemGroup>
+
+</Project>

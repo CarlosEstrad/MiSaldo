@@ -1,10 +1,12 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/MiSaldo.Api/MiSaldo.Api.csproj" />
     <Project Path="src/MiSaldo.Application/MiSaldo.Application.csproj" />
     <Project Path="src/MiSaldo.Domain/MiSaldo.Domain.csproj" />
     <Project Path="src/MiSaldo.Infrastructure/MiSaldo.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/MiSaldo.Api.Tests/MiSaldo.Api.Tests.csproj" />
     <Project Path="tests/MiSaldo.Application.Tests/MiSaldo.Application.Tests.csproj" />
     <Project Path="tests/MiSaldo.Domain.Tests/MiSaldo.Domain.Tests.csproj" />
     <Project Path="tests/MiSaldo.Infrastructure.Tests/MiSaldo.Infrastructure.Tests.csproj" />
