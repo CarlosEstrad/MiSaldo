@@ -1,5 +1,6 @@
 using MiSaldo.Application.Abstractions;
 using MiSaldo.Infrastructure;
+using MiSaldo.Infrastructure.Auth;
 using MiSaldo.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -54,5 +55,40 @@ public class DependencyInjectionTests
     {
         var services = new ServiceCollection();
         Assert.Throws<ArgumentException>(() => services.AddMiSaldoPersistence(" "));
+    }
+
+    [Fact]
+    public void The_auth_repository_resolves_within_a_scope()
+    {
+        using var provider = BuildProvider(new TestCurrentUser(Guid.NewGuid()));
+        using var scope = provider.CreateScope();
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<IAuthRepository>());
+    }
+
+    [Fact]
+    public void Authentication_services_resolve_and_work_together()
+    {
+        var services = new ServiceCollection();
+        services.AddMiSaldoAuthentication(
+            new JwtOptions { SigningKey = new string('k', 48) },
+            new Argon2Options { MemorySizeKiB = 1024, Iterations = 1, Parallelism = 1 });
+        using var provider = services.BuildServiceProvider(validateScopes: true);
+
+        var hasher = provider.GetRequiredService<IPasswordHasher>();
+        var tokens = provider.GetRequiredService<ITokenService>();
+
+        Assert.True(hasher.Verify(hasher.Hash("wired up password"), "wired up password"));
+        Assert.False(string.IsNullOrEmpty(tokens.CreateAccessToken(Guid.NewGuid(), true).Value));
+        Assert.IsType<SystemClock>(provider.GetRequiredService<IClock>());
+    }
+
+    [Fact]
+    public void A_weak_signing_key_stops_the_host_at_registration()
+    {
+        var services = new ServiceCollection();
+
+        Assert.Throws<ArgumentException>(() =>
+            services.AddMiSaldoAuthentication(new JwtOptions { SigningKey = "too-short" }));
     }
 }

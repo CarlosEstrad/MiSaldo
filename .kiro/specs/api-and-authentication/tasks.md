@@ -29,7 +29,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Pruebas (🐳 reusan el fixture de persistencia): un repositorio guarda y lee.
   - _Requisitos: R1.3_
 
-- [ ] 3. Modelo de datos de autenticación
+- [x] 3. Modelo de datos de autenticación
   - Agregar `UserCredential`, `RefreshToken`, `OneTimeToken` (persistencia) y su
     migración; `IPasswordHasher` con Argon2id y `ITokenService` con JWT HS256.
   - Pruebas: hash verifica/rechaza; el token se firma y valida con claims `sub`.

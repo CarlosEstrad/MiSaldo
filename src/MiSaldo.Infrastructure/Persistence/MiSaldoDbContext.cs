@@ -36,6 +36,13 @@ public sealed class MiSaldoDbContext : DbContext
 
     public DbSet<AccountDeletionRecord> AccountDeletionRecords => Set<AccountDeletionRecord>();
 
+    // Authentication entities
+    public DbSet<UserCredential> UserCredentials => Set<UserCredential>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<OneTimeToken> OneTimeTokens => Set<OneTimeToken>();
+
     // Financial entities
     public DbSet<FinancialPeriod> FinancialPeriods => Set<FinancialPeriod>();
 
@@ -129,7 +136,7 @@ public sealed class MiSaldoDbContext : DbContext
 
         foreach (var entry in ChangeTracker.Entries())
         {
-            if (entry.Entity is User)
+            if (entry.Entity is User or UserCredential)
             {
                 StampAccountEntity(entry, now);
                 continue;

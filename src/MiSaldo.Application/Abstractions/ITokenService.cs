@@ -17,6 +17,9 @@ public sealed record OpaqueToken(string Value, string Hash);
 /// </summary>
 public interface ITokenService
 {
+    /// <summary>How long a refresh token stays valid before it must be renewed by logging in again.</summary>
+    TimeSpan RefreshTokenLifetime { get; }
+
     /// <summary>Creates a short-lived signed access token carrying the user id.</summary>
     AccessToken CreateAccessToken(Guid userId, bool emailVerified);
 

@@ -1,9 +1,11 @@
 using MiSaldo.Application.Abstractions;
+using MiSaldo.Infrastructure.Auth;
 using MiSaldo.Infrastructure.Persistence;
 using MiSaldo.Infrastructure.Persistence.Interceptors;
 using MiSaldo.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace MiSaldo.Infrastructure;
 
@@ -41,6 +43,32 @@ public static class DependencyInjection
         services.AddScoped<IPeriodRepository, PeriodRepository>();
         services.AddScoped<IIncomeRepository, IncomeRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IAuthRepository, AuthRepository>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the backend's own authentication services: the Argon2id password
+    /// hasher, the JWT token service and the system clock. The options are
+    /// validated here, so a weak signing key or a bad lifetime stops the host at
+    /// startup instead of surfacing at the first login.
+    /// </summary>
+    public static IServiceCollection AddMiSaldoAuthentication(
+        this IServiceCollection services, JwtOptions jwtOptions, Argon2Options? argon2Options = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(jwtOptions);
+
+        jwtOptions.Validate();
+        var argon2 = argon2Options ?? new Argon2Options();
+        argon2.Validate();
+
+        services.TryAddSingleton<IClock, SystemClock>();
+        services.AddSingleton(jwtOptions);
+        services.AddSingleton<IPasswordHasher>(new PasswordHasher(argon2));
+        services.AddSingleton<ITokenService>(provider =>
+            new JwtTokenService(jwtOptions, provider.GetRequiredService<IClock>()));
 
         return services;
     }
