@@ -6,6 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="MiSaldo.Infrastructure.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Account email texts (RF-CFG-03): one file per email, language and format. -->
+    <EmbeddedResource Include="Email\Templates\*" LogicalName="MiSaldo.Email.Templates.%(Filename)%(Extension)" WithCulture="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MiSaldo.Application\MiSaldo.Application.csproj" />
     <ProjectReference Include="..\MiSaldo.Domain\MiSaldo.Domain.csproj" />
   </ItemGroup>

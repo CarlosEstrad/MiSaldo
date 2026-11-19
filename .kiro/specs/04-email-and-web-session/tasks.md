@@ -39,7 +39,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     mensaje lleva idioma y vencimiento.
   - _Requisitos: R2.3_
 
-- [ ] 3. Plantillas y armado de los correos
+- [x] 3. Plantillas y armado de los correos
   - Plantillas incrustadas de verificación y recuperación, en español e inglés,
     en texto y HTML; `AccountEmailComposer` arma asunto, texto y HTML con el
     enlace `{Frontend:BaseUrl}/verify-email?token=` o `/reset-password?token=` y

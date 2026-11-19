@@ -1,0 +1,11 @@
+Hola:
+
+Gracias por crear tu cuenta en MiSaldo. Para empezar a registrar tus ingresos y gastos, confirma que este correo es tuyo abriendo este enlace:
+
+{{Link}}
+
+El enlace funciona una sola vez y vence en {{ValidFor}}. Si venció, puedes pedir uno nuevo desde la página de inicio de sesión.
+
+Si no creaste una cuenta en MiSaldo, ignora este correo: sin la confirmación, nadie podrá usar la cuenta.
+
+— MiSaldo

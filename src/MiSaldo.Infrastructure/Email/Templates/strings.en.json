@@ -1,0 +1,8 @@
+{
+  "verify-email.subject": "Confirm your email for MiSaldo",
+  "reset-password.subject": "Reset your MiSaldo password",
+  "hour": "hour",
+  "hours": "hours",
+  "minute": "minute",
+  "minutes": "minutes"
+}

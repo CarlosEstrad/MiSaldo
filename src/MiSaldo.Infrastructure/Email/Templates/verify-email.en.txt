@@ -1,0 +1,11 @@
+Hi,
+
+Thanks for creating your MiSaldo account. To start recording your income and expenses, confirm that this email is yours by opening this link:
+
+{{Link}}
+
+The link works once and expires in {{ValidFor}}. If it has expired, you can ask for a new one from the sign-in page.
+
+If you did not create a MiSaldo account, ignore this email: without the confirmation, nobody can use the account.
+
+— MiSaldo
