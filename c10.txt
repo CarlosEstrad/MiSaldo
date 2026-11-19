@@ -1,1 +1,0 @@
-﻿3130b38 docs(infra): cierra el spec de persistencia (config, secretos y documentacion)

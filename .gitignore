@@ -28,3 +28,5 @@ coverage/
 # OS
 Thumbs.db
 .DS_Store
+# Local tooling and scratch files that do not belong in the repository
+dotnet-install.sh
