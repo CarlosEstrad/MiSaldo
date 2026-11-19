@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>MiSaldo.Application</RootNamespace>
+    <AssemblyName>MiSaldo.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MiSaldo.Domain\MiSaldo.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MiSaldo.Application\MiSaldo.Application.csproj" />
     <ProjectReference Include="..\MiSaldo.Domain\MiSaldo.Domain.csproj" />
   </ItemGroup>
 

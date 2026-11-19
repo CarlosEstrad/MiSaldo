@@ -104,6 +104,22 @@ public sealed class MiSaldoDbContext : DbContext
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
+    // The account itself has no owner UserId (it is the owner), but it still
+    // carries CreatedAt/UpdatedAt, which are stamped here.
+    private static void StampAccountEntity(
+        Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry, DateTimeOffset now)
+    {
+        if (entry.State == EntityState.Added)
+        {
+            entry.Property("CreatedAt").CurrentValue = now;
+            entry.Property("UpdatedAt").CurrentValue = now;
+        }
+        else if (entry.State == EntityState.Modified)
+        {
+            entry.Property("UpdatedAt").CurrentValue = now;
+        }
+    }
+
     // Stamps UserId (on insert) and CreatedAt/UpdatedAt on user-scoped entities.
     // Fails safe: a write with no user in context is rejected (RNF-SEG-04).
     private void StampUserScopedEntities()
@@ -113,6 +129,12 @@ public sealed class MiSaldoDbContext : DbContext
 
         foreach (var entry in ChangeTracker.Entries())
         {
+            if (entry.Entity is User)
+            {
+                StampAccountEntity(entry, now);
+                continue;
+            }
+
             if (!scoped.Contains(entry.Entity.GetType()))
             {
                 continue;

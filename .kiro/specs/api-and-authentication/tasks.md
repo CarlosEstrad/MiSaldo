@@ -15,7 +15,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
 
 ## Tasks
 
-- [ ] 1. Capa de aplicación y abstracciones
+- [x] 1. Capa de aplicación y abstracciones
   - Crear `src/MiSaldo.Application` (net10.0, ref a Domain, sin ASP.NET/EF).
   - Definir las abstracciones: `IUnitOfWork`, repositorios, `IClock`,
     `ITokenService`, `IPasswordHasher`, `ICurrentUser` (reusar el de infra), y el
@@ -23,7 +23,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Verificar con `dotnet build` y una prueba de un caso de uso trivial.
   - _Requisitos: R1.1, R1.2_
 
-- [ ] 2. Implementación de persistencia para la aplicación
+- [x] 2. Implementación de persistencia para la aplicación
   - Implementar en `MiSaldo.Infrastructure` los repositorios y `IUnitOfWork`
     sobre `MiSaldoDbContext`; registrar en DI.
   - Pruebas (🐳 reusan el fixture de persistencia): un repositorio guarda y lee.
