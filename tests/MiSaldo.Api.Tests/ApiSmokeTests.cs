@@ -60,6 +60,9 @@ public class ApiSmokeTests : IClassFixture<ApiFactory>
     public async Task An_unknown_route_answers_with_problem_details_and_a_correlation_id()
     {
         using var client = _factory.CreateClient();
+        // Anonymous callers get 401 on any route (task 7); an authenticated one gets the real 404.
+        var token = _factory.Services.GetRequiredService<ITokenService>().CreateAccessToken(Guid.NewGuid(), true);
+        client.DefaultRequestHeaders.Authorization = new("Bearer", token.Value);
 
         var response = await client.GetAsync($"/{ApiRoutes.V1}/does-not-exist", Ct);
 

@@ -6,6 +6,7 @@ using MiSaldo.Infrastructure;
 using MiSaldo.Infrastructure.Auth;
 using MiSaldo.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MiSaldo.Api;
 
@@ -53,7 +54,12 @@ public static class ServiceRegistration
                 options.MapInboundClaims = false;
                 options.TokenValidationParameters = JwtValidation.CreateParameters(jwtOptions);
             });
-        services.AddAuthorization();
+        // Every route needs a valid token unless it opts out with [AllowAnonymous] (RF-AUT-08).
+        services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build());
+        services.AddMiSaldoRateLimiting(
+            configuration.GetSection("RateLimiting").Get<RateLimitingOptions>() ?? new RateLimitingOptions());
 
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
         {

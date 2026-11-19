@@ -68,7 +68,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Verificar con `dotnet build` y el arranque de la app en una prueba de humo.
   - _Requisitos: R14.1, R14.3, R14.4_
 
-- [ ] 7. Autorización, CurrentUser y rate limiting
+- [x] 7. Autorización, CurrentUser y rate limiting
   - Middleware que puebla `ICurrentUser` desde el claim `sub`; rutas privadas
     exigen token (401 sin él); rate limiting con política estricta en `/auth/*`.
   - Pruebas (🐳): ruta privada sin token → 401; con token resuelve el usuario.
