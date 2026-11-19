@@ -24,6 +24,9 @@ public sealed class ExpenseRepository : IExpenseRepository
             .OrderBy(e => e.Date)
             .ToListAsync(cancellationToken);
 
+    public Task<bool> HasAnyAsync(CancellationToken cancellationToken = default) =>
+        _db.Expenses.AnyAsync(cancellationToken);
+
     public void Add(Expense expense) => _db.Expenses.Add(expense);
 
     public void Remove(Expense expense) => _db.Expenses.Remove(expense);

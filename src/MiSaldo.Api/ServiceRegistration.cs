@@ -1,7 +1,11 @@
+using System.Text.Json.Serialization;
 using MiSaldo.Api.Auth;
 using MiSaldo.Api.Common;
 using MiSaldo.Application.Abstractions;
 using MiSaldo.Application.Accounts;
+using MiSaldo.Application.Categories;
+using MiSaldo.Application.Profile;
+using MiSaldo.Application.Settings;
 using MiSaldo.Infrastructure;
 using MiSaldo.Infrastructure.Auth;
 using MiSaldo.Infrastructure.Persistence;
@@ -57,9 +61,11 @@ public static class ServiceRegistration
                 options.TokenValidationParameters = JwtValidation.CreateParameters(jwtOptions);
             });
         // Every route needs a valid token unless it opts out with [AllowAnonymous] (RF-AUT-08).
-        services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder()
-            .RequireAuthenticatedUser()
-            .Build());
+        services.AddAuthorization(options =>
+        {
+            options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+            AuthPolicies.Add(options);
+        });
         services.AddMiSaldoRateLimiting(
             configuration.GetSection("RateLimiting").Get<RateLimitingOptions>() ?? new RateLimitingOptions());
 
@@ -72,7 +78,11 @@ public static class ServiceRegistration
         });
         services.AddExceptionHandler<ApiExceptionHandler>();
 
-        services.AddControllers().ConfigureApiBehaviorOptions(options =>
+        services.AddControllers()
+            .AddJsonOptions(options =>
+                // Enums travel by name ("Monthly", "Dark"); numbers are refused so only known values get in.
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)))
+            .ConfigureApiBehaviorOptions(options =>
             options.InvalidModelStateResponseFactory = context =>
             {
                 // A malformed body is rejected before any use case runs (RNF-SEG-06), as Problem Details.
@@ -103,6 +113,12 @@ public static class ServiceRegistration
         services.AddScoped<LogoutHandler>();
         services.AddScoped<ForgotPasswordHandler>();
         services.AddScoped<ResetPasswordHandler>();
+
+        services.AddScoped<GetProfileHandler>();
+        services.AddScoped<UpdateProfileHandler>();
+        services.AddScoped<GetSettingsHandler>();
+        services.AddScoped<UpdateSettingsHandler>();
+        services.AddScoped<CategoryHandlers>();
 
         return services;
     }

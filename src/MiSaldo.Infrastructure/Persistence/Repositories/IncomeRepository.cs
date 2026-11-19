@@ -23,6 +23,9 @@ public sealed class IncomeRepository : IIncomeRepository
             .OrderBy(i => i.Date)
             .ToListAsync(cancellationToken);
 
+    public Task<bool> HasAnyAsync(CancellationToken cancellationToken = default) =>
+        _db.IncomeTransactions.AnyAsync(cancellationToken);
+
     public void Add(IncomeTransaction income) => _db.IncomeTransactions.Add(income);
 
     public void Remove(IncomeTransaction income) => _db.IncomeTransactions.Remove(income);

@@ -12,6 +12,9 @@ public interface IIncomeRepository
     Task<IReadOnlyList<IncomeTransaction>> ListForRangeAsync(
         DateOnly start, DateOnly end, CancellationToken cancellationToken = default);
 
+    /// <summary>True when the user has any income at all (locks the primary currency, RF-PER-04).</summary>
+    Task<bool> HasAnyAsync(CancellationToken cancellationToken = default);
+
     void Add(IncomeTransaction income);
 
     void Remove(IncomeTransaction income);
@@ -25,6 +28,9 @@ public interface IExpenseRepository
     /// <summary>Expenses relevant to a period: dated or paid inside the range.</summary>
     Task<IReadOnlyList<Expense>> ListForRangeAsync(
         DateOnly start, DateOnly end, CancellationToken cancellationToken = default);
+
+    /// <summary>True when the user has any expense at all (locks the primary currency, RF-PER-04).</summary>
+    Task<bool> HasAnyAsync(CancellationToken cancellationToken = default);
 
     void Add(Expense expense);
 

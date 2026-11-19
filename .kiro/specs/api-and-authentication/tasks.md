@@ -80,7 +80,7 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Pruebas (🐳): flujo registro → verificación → login → refresh → logout.
   - _Requisitos: R2, R3, R4, R5, R6, R15.2_
 
-- [ ] 9. Perfil, configuración y categorías
+- [x] 9. Perfil, configuración y categorías
   - Controladores `/profile`, `/settings`, `/categories` con sus casos de uso;
     bloqueo de cambio de moneda con movimientos; categoría única por usuario.
   - Pruebas (🐳): leer/editar perfil; config persiste; categoría duplicada → 409.
