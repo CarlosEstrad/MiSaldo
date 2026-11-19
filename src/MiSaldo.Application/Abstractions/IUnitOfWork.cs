@@ -8,6 +8,9 @@ public interface IUnitOfWork
 {
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Forgets every pending change, for example after a save that the database rejected.</summary>
+    void Discard();
+
     /// <summary>
     /// Runs <paramref name="action"/> inside a single transaction and commits it
     /// when the action completes without throwing.

@@ -65,9 +65,14 @@ public class ModelBuildingTests
     {
         using var context = CreateContext();
         var income = context.Model.GetEntityTypes().Single(e => e.GetTableName() == "income_transactions");
-        var valueProp = income.FindProperty("Value");
-        Assert.NotNull(valueProp);
-        Assert.Equal("numeric(18,2)", valueProp!.GetColumnType());
+
+        // Money is a complex value stored in two columns: the amount and its currency (design T2).
+        var value = income.FindComplexProperty("Value");
+        Assert.NotNull(value);
+        var amount = value!.ComplexType.FindProperty("Amount")!;
+        Assert.Equal("numeric(18,2)", amount.GetColumnType());
+        Assert.Equal("value_amount", amount.GetColumnName());
+        Assert.Equal("value_currency", value.ComplexType.FindProperty("Currency")!.GetColumnName());
     }
 
     [Fact]

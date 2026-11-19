@@ -4,6 +4,8 @@ using MiSaldo.Api.Common;
 using MiSaldo.Application.Abstractions;
 using MiSaldo.Application.Accounts;
 using MiSaldo.Application.Categories;
+using MiSaldo.Application.Dashboard;
+using MiSaldo.Application.Movements;
 using MiSaldo.Application.Periods;
 using MiSaldo.Application.Profile;
 using MiSaldo.Application.Settings;
@@ -121,6 +123,10 @@ public static class ServiceRegistration
         services.AddScoped<UpdateSettingsHandler>();
         services.AddScoped<CategoryHandlers>();
         services.AddScoped<PeriodHandlers>();
+        services.AddScoped<PeriodWriteRules>();
+        services.AddScoped<IncomeHandlers>();
+        services.AddScoped<ExpenseHandlers>();
+        services.AddScoped<GetDashboardHandler>();
 
         return services;
     }

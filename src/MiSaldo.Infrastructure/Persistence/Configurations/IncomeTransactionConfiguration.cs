@@ -18,10 +18,7 @@ public sealed class IncomeTransactionConfiguration : IEntityTypeConfiguration<In
         builder.Property(i => i.Date).HasColumnType("date");
         builder.Property(i => i.ReceivedDate).HasColumnType("date");
 
-        builder.Property(i => i.Value)
-            .HasConversion(MoneyConverter.Cop)
-            .HasColumnName("value_amount")
-            .HasColumnType("numeric(18,2)");
+        builder.MapMoney(i => i.Value, "value");
 
         builder.ToTable(t => t.HasCheckConstraint(
             "ck_income_value_positive", "value_amount > 0"));

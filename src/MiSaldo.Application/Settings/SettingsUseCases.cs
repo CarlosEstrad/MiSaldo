@@ -32,10 +32,9 @@ public static class SupportedSettings
 {
     public static IReadOnlyList<string> Languages { get; } = ["es", "en"];
 
-    public static IReadOnlyList<Currency> Currencies { get; } = [Currency.Cop, Currency.Usd];
+    public static IReadOnlyList<Currency> Currencies => Currency.Supported;
 
-    public static Currency? FindCurrency(string? code) =>
-        Currencies.FirstOrDefault(c => string.Equals(c.Code, code?.Trim(), StringComparison.OrdinalIgnoreCase));
+    public static Currency? FindCurrency(string? code) => Currency.FindByCode(code);
 }
 
 /// <summary>Reads the current user's settings.</summary>

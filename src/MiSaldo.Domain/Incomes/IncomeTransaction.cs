@@ -9,6 +9,15 @@ namespace MiSaldo.Domain.Incomes;
 /// </summary>
 public sealed class IncomeTransaction
 {
+    // For ORM materialization only: EF Core sets the mapped properties, including
+    // the Money complex values, after construction. Application code uses the
+    // public constructor, which enforces the invariants.
+    private IncomeTransaction()
+    {
+        Description = string.Empty;
+        Source = string.Empty;
+    }
+
     public IncomeTransaction(
         Guid id,
         string description,
@@ -46,14 +55,14 @@ public sealed class IncomeTransaction
 
     public Guid Id { get; }
 
-    public string Description { get; }
+    public string Description { get; private set; }
 
-    public Money Value { get; }
+    public Money Value { get; private set; }
 
     /// <summary>The expected/registration date of the income.</summary>
-    public DateOnly Date { get; }
+    public DateOnly Date { get; private set; }
 
-    public string Source { get; }
+    public string Source { get; private set; }
 
     public IncomeStatus Status { get; private set; }
 
@@ -61,6 +70,23 @@ public sealed class IncomeTransaction
     public DateOnly? ReceivedDate { get; private set; }
 
     public bool IsReceived => Status == IncomeStatus.Received;
+
+    /// <summary>
+    /// Edits the income (RF-ING-05). Whether it was received, and when, is
+    /// changed only through <see cref="MarkReceived"/>.
+    /// </summary>
+    public void Update(string description, Money value, DateOnly date, string source)
+    {
+        if (!value.IsPositive)
+        {
+            throw new NonPositiveAmountException("Income value", value.Amount);
+        }
+
+        Description = description;
+        Value = value;
+        Date = date;
+        Source = source;
+    }
 
     /// <summary>
     /// Marks a planned income as received on the given date (RF-ING-03). An

@@ -378,10 +378,6 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Budgeted")
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("budgeted_amount");
-
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
@@ -412,6 +408,23 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Budgeted", "MiSaldo.Domain.Expenses.Expense.Budgeted#Money", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("budgeted_amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasDefaultValue("COP")
+                                .HasColumnName("budgeted_currency");
+                        });
 
                     b.HasKey("Id");
 
@@ -448,15 +461,28 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Value")
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("value_amount");
-
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Value", "MiSaldo.Domain.Expenses.ExpensePayment.Value#Money", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("value_amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasDefaultValue("COP")
+                                .HasColumnName("value_currency");
+                        });
 
                     b.HasKey("Id");
 
@@ -510,15 +536,28 @@ namespace MiSaldo.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Value")
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("value_amount");
-
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Value", "MiSaldo.Domain.Incomes.IncomeTransaction.Value#Money", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("value_amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasDefaultValue("COP")
+                                .HasColumnName("value_currency");
+                        });
 
                     b.HasKey("Id");
 

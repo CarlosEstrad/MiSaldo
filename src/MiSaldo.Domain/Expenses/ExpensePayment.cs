@@ -9,6 +9,13 @@ namespace MiSaldo.Domain.Expenses;
 /// </summary>
 public sealed class ExpensePayment
 {
+    // For ORM materialization only: EF Core sets the mapped properties, including
+    // the Money complex values, after construction. Application code uses the
+    // public constructor, which enforces the invariants.
+    private ExpensePayment()
+    {
+    }
+
     public ExpensePayment(Guid id, Money value, DateOnly date)
     {
         if (!value.IsPositive)

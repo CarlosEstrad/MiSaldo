@@ -14,6 +14,8 @@ public sealed class UnitOfWork : IUnitOfWork
     // EF Core exceptions are translated into application exceptions, so use
     // cases can react to a duplicate or a concurrent change without depending
     // on EF Core or the database driver.
+    public void Discard() => _db.ChangeTracker.Clear();
+
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try

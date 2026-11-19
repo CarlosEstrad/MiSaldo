@@ -14,10 +14,7 @@ public sealed class ExpensePaymentConfiguration : IEntityTypeConfiguration<Expen
 
         builder.Property(p => p.Date).HasColumnType("date");
 
-        builder.Property(p => p.Value)
-            .HasConversion(MoneyConverter.Cop)
-            .HasColumnName("value_amount")
-            .HasColumnType("numeric(18,2)");
+        builder.MapMoney(p => p.Value, "value");
 
         builder.ToTable(t => t.HasCheckConstraint(
             "ck_expense_payment_value_positive", "value_amount > 0"));

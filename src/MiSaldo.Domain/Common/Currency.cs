@@ -13,6 +13,13 @@ public sealed record Currency
     /// <summary>US dollar: 2 decimal places.</summary>
     public static readonly Currency Usd = new("USD", 2);
 
+    /// <summary>The currencies MiSaldo supports in F1.</summary>
+    public static IReadOnlyList<Currency> Supported { get; } = [Cop, Usd];
+
+    /// <summary>The supported currency with this ISO code, ignoring case; null when it is not supported.</summary>
+    public static Currency? FindByCode(string? code) =>
+        Supported.FirstOrDefault(c => string.Equals(c.Code, code?.Trim(), StringComparison.OrdinalIgnoreCase));
+
     public Currency(string code, int decimalPlaces)
     {
         if (string.IsNullOrWhiteSpace(code))

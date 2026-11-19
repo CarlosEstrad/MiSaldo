@@ -93,13 +93,13 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
     arrastre (CP-14); vencido bloquea el siguiente (CP-21).
   - _Requisitos: R10.1–R10.4_
 
-- [ ] 11. Ingresos, gastos, pagos y dashboard
-  - [ ] 11.1 `/incomes` y `/expenses` (+ `/expenses/{id}/payments`): CRUD,
+- [x] 11. Ingresos, gastos, pagos y dashboard
+  - [x] 11.1 `/incomes` y `/expenses` (+ `/expenses/{id}/payments`): CRUD,
         marcar recibido, pagos con clave de idempotencia, estado derivado.
     - Pruebas (🐳): ingreso/gasto/pago; valor ≤ 0 → 400; doble pago con misma
       clave → un solo pago (CP-12).
     - _Requisitos: R11.1–R11.3, R12.1–R12.4_
-  - [ ] 11.2 `/dashboard`: indicadores del periodo desde `FinancialEngine`.
+  - [x] 11.2 `/dashboard`: indicadores del periodo desde `FinancialEngine`.
     - Pruebas (🐳): caja y dinero libre correctos (CP-01, CP-02); libre negativo
       se expone tal cual.
     - _Requisitos: R13.1–R13.3_

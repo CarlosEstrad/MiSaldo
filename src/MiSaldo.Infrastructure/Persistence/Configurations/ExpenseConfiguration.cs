@@ -17,10 +17,7 @@ public sealed class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
         builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(16);
         builder.Property(e => e.Date).HasColumnType("date");
 
-        builder.Property(e => e.Budgeted)
-            .HasConversion(MoneyConverter.Cop)
-            .HasColumnName("budgeted_amount")
-            .HasColumnType("numeric(18,2)");
+        builder.MapMoney(e => e.Budgeted, "budgeted");
 
         builder.ToTable(t => t.HasCheckConstraint(
             "ck_expense_budget_positive", "budgeted_amount > 0"));

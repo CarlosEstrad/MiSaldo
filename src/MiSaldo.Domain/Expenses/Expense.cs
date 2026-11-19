@@ -12,6 +12,14 @@ public sealed class Expense
 {
     private readonly List<ExpensePayment> _payments = [];
 
+    // For ORM materialization only: EF Core sets the mapped properties, including
+    // the Money complex values, after construction. Application code uses the
+    // public constructor, which enforces the invariants.
+    private Expense()
+    {
+        Name = string.Empty;
+    }
+
     public Expense(
         Guid id,
         string name,
@@ -35,16 +43,16 @@ public sealed class Expense
 
     public Guid Id { get; }
 
-    public string Name { get; }
+    public string Name { get; private set; }
 
-    public Guid CategoryId { get; }
+    public Guid CategoryId { get; private set; }
 
-    public Money Budgeted { get; }
+    public Money Budgeted { get; private set; }
 
     /// <summary>The expense date. The outstanding obligation belongs to this period (RN-M02).</summary>
-    public DateOnly Date { get; }
+    public DateOnly Date { get; private set; }
 
-    public ExpenseType Type { get; }
+    public ExpenseType Type { get; private set; }
 
     public IReadOnlyList<ExpensePayment> Payments => _payments;
 
@@ -79,6 +87,29 @@ public sealed class Expense
         }
 
         return paid >= Budgeted ? ExpenseStatus.Paid : ExpenseStatus.Partial;
+    }
+
+    /// <summary>
+    /// Edits the expense (RF-GAS-06). Payments are not touched: they are an
+    /// immutable history (RN-M08), so the budget keeps their currency.
+    /// </summary>
+    public void Update(string name, Guid categoryId, Money budgeted, DateOnly date, ExpenseType type)
+    {
+        if (!budgeted.IsPositive)
+        {
+            throw new NonPositiveAmountException("Expense budget", budgeted.Amount);
+        }
+
+        if (!budgeted.Currency.Equals(Budgeted.Currency))
+        {
+            throw new CurrencyMismatchException(Budgeted.Currency, budgeted.Currency);
+        }
+
+        Name = name;
+        CategoryId = categoryId;
+        Budgeted = budgeted;
+        Date = date;
+        Type = type;
     }
 
     /// <summary>
