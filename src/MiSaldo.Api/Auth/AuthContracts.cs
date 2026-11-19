@@ -11,7 +11,8 @@ public sealed record RegisterRequest(
     [Required] string Country,
     string? Gender,
     bool AcceptsPrivacyPolicy,
-    bool AcceptsTerms)
+    bool AcceptsTerms,
+    string? Language = null)
 {
     public override string ToString() => Redaction.Of(nameof(RegisterRequest));
 }

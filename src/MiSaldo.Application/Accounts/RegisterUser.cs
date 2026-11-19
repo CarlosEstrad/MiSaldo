@@ -1,5 +1,6 @@
 using MiSaldo.Application.Abstractions;
 using MiSaldo.Application.Common;
+using MiSaldo.Application.Settings;
 using MiSaldo.Domain.Accounts;
 using MiSaldo.Domain.Common;
 using MiSaldo.Domain.Periods;
@@ -15,7 +16,8 @@ public sealed record RegisterUserCommand(
     string Country,
     string? Gender,
     bool AcceptsPrivacyPolicy,
-    bool AcceptsTerms)
+    bool AcceptsTerms,
+    string? Language = null)
 {
     public override string ToString() => Redaction.Of(nameof(RegisterUserCommand));
 }
@@ -34,6 +36,7 @@ public static class RegistrationValidator
     public const string InvalidCountryCode = "registration.invalid_country";
     public const string InvalidGenderCode = "registration.invalid_gender";
     public const string ConsentRequiredCode = "registration.consent_required";
+    public const string InvalidLanguageCode = "registration.invalid_language";
 
     public static Result Validate(RegisterUserCommand command)
     {
@@ -69,7 +72,20 @@ public static class RegistrationValidator
                 ConsentRequiredCode, "The privacy policy and the terms of use must be accepted."));
         }
 
+        if (command.Language is not null && NormalizeLanguage(command.Language) is null)
+        {
+            return Result.Failure(Error.Validation(
+                InvalidLanguageCode, $"The language must be one of: {string.Join(", ", SupportedSettings.Languages)}."));
+        }
+
         return PasswordPolicy.Validate(command.Password);
+    }
+
+    /// <summary>The supported language code in lower case, or null when it is not supported (RF-CFG-03).</summary>
+    public static string? NormalizeLanguage(string? language)
+    {
+        var code = language?.Trim().ToLowerInvariant();
+        return code is not null && SupportedSettings.Languages.Contains(code) ? code : null;
     }
 
     /// <summary>Emails are stored trimmed and lower-case, so lookups are case-insensitive.</summary>
@@ -184,6 +200,10 @@ public sealed class RegisterUserHandler
 
         var email = RegistrationValidator.NormalizeEmail(command.Email);
 
+        // The first email already goes out in the visitor's language (R2.3).
+        var language = RegistrationValidator.NormalizeLanguage(command.Language) ?? _options.DefaultLanguage;
+        var verificationExpiresAt = now + _options.EmailVerificationTokenLifetime;
+
         // The message does not say the email is taken, so the endpoint cannot be
         // used to confirm which addresses have accounts (RNF-SEG-05).
         var unavailable = Result.Failure<RegisterUserResult>(Error.Conflict(
@@ -214,7 +234,7 @@ public sealed class RegisterUserHandler
                     Guid.NewGuid(),
                     userId,
                     _options.DefaultCurrency,
-                    _options.DefaultLanguage,
+                    language,
                     ThemePreference.System,
                     PeriodType.Monthly,
                     new PeriodSettings()));
@@ -228,7 +248,7 @@ public sealed class RegisterUserHandler
                     OneTimeTokenPurpose.EmailVerification,
                     verificationToken.Hash,
                     now,
-                    now + _options.EmailVerificationTokenLifetime));
+                    verificationExpiresAt));
 
                 await _unitOfWork.SaveChangesAsync(ct);
                 await _seeder.SeedCategoriesAsync(userId, DefaultCategories.Create(), ct);
@@ -241,7 +261,7 @@ public sealed class RegisterUserHandler
         }
 
         await _notifier.SendEmailVerificationAsync(
-            new AccountTokenMessage(userId, email, verificationToken.Value), cancellationToken);
+            new AccountTokenMessage(userId, email, verificationToken.Value, language, verificationExpiresAt), cancellationToken);
 
         return Result.Success(new RegisterUserResult(userId));
     }

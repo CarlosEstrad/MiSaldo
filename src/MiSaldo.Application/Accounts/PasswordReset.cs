@@ -59,6 +59,7 @@ public sealed class ForgotPasswordHandler
         }
 
         var now = _clock.UtcNow;
+        var expiresAt = now + _options.PasswordResetTokenLifetime;
         var resetToken = _tokens.CreateOpaqueToken();
         _auth.Add(new OneTimeToken(
             Guid.NewGuid(),
@@ -66,11 +67,14 @@ public sealed class ForgotPasswordHandler
             OneTimeTokenPurpose.PasswordReset,
             resetToken.Hash,
             now,
-            now + _options.PasswordResetTokenLifetime));
+            expiresAt));
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        // The email goes out in the user's language; settings always exist for a registered user.
+        var settings = await _users.GetSettingsAsync(profile.UserId, cancellationToken);
+        var language = RegistrationValidator.NormalizeLanguage(settings?.Language) ?? RegistrationOptions.FallbackLanguage;
         await _notifier.SendPasswordResetAsync(
-            new AccountTokenMessage(profile.UserId, email, resetToken.Value), cancellationToken);
+            new AccountTokenMessage(profile.UserId, email, resetToken.Value, language, expiresAt), cancellationToken);
 
         return Result.Success();
     }

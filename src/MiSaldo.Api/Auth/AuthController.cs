@@ -32,7 +32,8 @@ public sealed class AuthController : ApiControllerBase
                 request.Country,
                 request.Gender,
                 request.AcceptsPrivacyPolicy,
-                request.AcceptsTerms),
+                request.AcceptsTerms,
+                request.Language),
             cancellationToken);
 
         return result.IsSuccess

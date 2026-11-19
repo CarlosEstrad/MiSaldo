@@ -1,8 +1,11 @@
 using MiSaldo.Application.Common;
 namespace MiSaldo.Application.Abstractions;
 
-/// <summary>A single-use token to deliver to the account owner (verification or reset).</summary>
-public sealed record AccountTokenMessage(Guid UserId, string Email, string Token)
+/// <summary>
+/// A single-use token to deliver to the account owner (verification or reset),
+/// with the language of the email and the moment the link stops working.
+/// </summary>
+public sealed record AccountTokenMessage(Guid UserId, string Email, string Token, string Language, DateTimeOffset ExpiresAt)
 {
     public override string ToString() => Redaction.Of(nameof(AccountTokenMessage));
 }

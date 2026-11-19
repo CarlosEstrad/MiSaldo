@@ -93,6 +93,35 @@ public class RegistrationValidatorTests
         Assert.Equal("ana@example.com", RegistrationValidator.NormalizeEmail("  Ana@Example.COM "));
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("es")]
+    [InlineData("en")]
+    [InlineData(" EN ")]
+    public void The_language_is_optional_and_case_insensitive(string? language)
+    {
+        Assert.True(RegistrationValidator.Validate(Valid() with { Language = language }).IsSuccess);
+    }
+
+    [Theory]
+    [InlineData("fr")]
+    [InlineData("")]
+    [InlineData("español")]
+    public void An_unsupported_language_is_rejected(string language)
+    {
+        AssertFails(RegistrationValidator.Validate(Valid() with { Language = language }), RegistrationValidator.InvalidLanguageCode);
+    }
+
+    [Theory]
+    [InlineData("EN", "en")]
+    [InlineData(" es ", "es")]
+    [InlineData("pt", null)]
+    [InlineData(null, null)]
+    public void Languages_are_normalized_to_lower_case(string? language, string? expected)
+    {
+        Assert.Equal(expected, RegistrationValidator.NormalizeLanguage(language));
+    }
+
     private static void AssertFails(Result result, string code)
     {
         Assert.True(result.IsFailure);

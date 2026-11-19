@@ -30,7 +30,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     arranca; Development sin SMTP sí.
   - _Requisitos: R1.2–R1.5, R7.2, R7.4, R10.5_
 
-- [ ] 2. Idioma y vencimiento en el mensaje de cuenta
+- [x] 2. Idioma y vencimiento en el mensaje de cuenta
   - Agregar `Language` y `ExpiresAt` a `AccountTokenMessage` y llenarlos en el
     registro y en la recuperación.
   - Aceptar `language` opcional (`es`/`en`, por defecto `es`) en el registro,

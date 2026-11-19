@@ -24,7 +24,10 @@ public sealed record RegistrationOptions
 
     public Currency DefaultCurrency { get; init; } = Currency.Cop;
 
-    public string DefaultLanguage { get; init; } = "es";
+    /// <summary>The launch language (decision 8 of the SRS), used when nothing else says otherwise.</summary>
+    public const string FallbackLanguage = "es";
+
+    public string DefaultLanguage { get; init; } = FallbackLanguage;
 
     public string DefaultCountry { get; init; } = "CO";
 
