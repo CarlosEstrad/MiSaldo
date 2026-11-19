@@ -1,5 +1,7 @@
 using MiSaldo.Application.Abstractions;
+using MiSaldo.Application.Common;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace MiSaldo.Infrastructure.Persistence.Repositories;
 
@@ -9,8 +11,25 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public UnitOfWork(MiSaldoDbContext db) => _db = db;
 
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-        _db.SaveChangesAsync(cancellationToken);
+    // EF Core exceptions are translated into application exceptions, so use
+    // cases can react to a duplicate or a concurrent change without depending
+    // on EF Core or the database driver.
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new ConcurrencyConflictException(ex);
+        }
+        catch (DbUpdateException ex) when (
+            ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } unique)
+        {
+            throw new DuplicateKeyException(unique.ConstraintName, ex);
+        }
+    }
 
     // Everything the action saves is committed together, or rolled back if the
     // action throws (RNF-DAT-01). The action decides when to call SaveChanges.

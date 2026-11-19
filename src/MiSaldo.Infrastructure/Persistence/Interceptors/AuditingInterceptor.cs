@@ -48,7 +48,6 @@ public sealed class AuditingInterceptor : SaveChangesInterceptor
     private void AddAuditEntries(DbContext context)
     {
         var scoped = new HashSet<Type>(MiSaldoDbContext.UserScopedEntityTypes);
-        var userId = _currentUser.UserId ?? Guid.Empty;
         var now = DateTimeOffset.UtcNow;
 
         // Snapshot the audited entries first; adding AuditLog rows mutates the
@@ -59,6 +58,9 @@ public sealed class AuditingInterceptor : SaveChangesInterceptor
             .Select(e => new
             {
                 e.State,
+                // Who made the change: the authenticated user, or, while a new
+                // account is being created, the account the row belongs to.
+                ActorId = _currentUser.UserId ?? (e.Property("UserId").CurrentValue as Guid?) ?? Guid.Empty,
                 EntityType = e.Entity.GetType().Name,
                 EntityId = (Guid)(e.Property("Id").CurrentValue ?? Guid.Empty),
                 Old = e.State == EntityState.Added ? null : SerializeValues(e, original: true),
@@ -71,7 +73,7 @@ public sealed class AuditingInterceptor : SaveChangesInterceptor
             context.Set<AuditLog>().Add(new AuditLog
             {
                 Id = Guid.NewGuid(),
-                UserId = userId,
+                UserId = entry.ActorId,
                 EntityType = entry.EntityType,
                 EntityId = entry.EntityId,
                 Action = entry.State.ToString(),

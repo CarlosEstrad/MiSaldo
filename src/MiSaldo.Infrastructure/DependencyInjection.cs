@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IIncomeRepository, IncomeRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
         services.AddScoped<IAuthRepository, AuthRepository>();
+        services.AddScoped<INewUserDataSeeder, NewUserDataSeeder>();
 
         return services;
     }

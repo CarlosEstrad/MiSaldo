@@ -149,9 +149,26 @@ public sealed class MiSaldoDbContext : DbContext
 
             if (entry.State is EntityState.Added or EntityState.Modified)
             {
-                var userId = _currentUser.UserId
-                    ?? throw new InvalidOperationException(
+                // With an authenticated user, its id always wins. Without one,
+                // only a new row that already carries an owner is accepted: the
+                // new-account seeder sets it, and RLS still checks it against
+                // the session. Anything else fails safe.
+                Guid userId;
+                if (_currentUser.UserId is { } current)
+                {
+                    userId = current;
+                }
+                else if (entry.State == EntityState.Added
+                    && entry.Property("UserId").CurrentValue is Guid owner
+                    && owner != Guid.Empty)
+                {
+                    userId = owner;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
                         "Cannot persist a user-scoped entity without a current user.");
+                }
 
                 if (entry.State == EntityState.Added)
                 {

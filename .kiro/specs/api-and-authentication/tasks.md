@@ -35,14 +35,14 @@ usan Testcontainers (PostgreSQL real) con `WebApplicationFactory`.
   - Pruebas: hash verifica/rechaza; el token se firma y valida con claims `sub`.
   - _Requisitos: R2.5, R4.2, R4.3, R5.4_
 
-- [ ] 4. Registro y verificación de correo
-  - [ ] 4.1 Caso de uso de registro: valida edad (+18), política de contraseña,
+- [x] 4. Registro y verificación de correo
+  - [x] 4.1 Caso de uso de registro: valida edad (+18), política de contraseña,
         correo único; crea User/Profile/Settings/Consent/Credential y categorías
         iniciales en una transacción.
     - Pruebas (🐳): registro válido crea todo; menor de 18 rechazado (CP-11);
       correo duplicado y contraseña corta rechazados.
     - _Requisitos: R2.1–R2.5, R9.1_
-  - [ ] 4.2 Verificación de correo: genera y consume el token de un solo uso.
+  - [x] 4.2 Verificación de correo: genera y consume el token de un solo uso.
     - Pruebas: token válido marca verificado; token consumido o expirado falla.
     - _Requisitos: R3.1–R3.4_
 
