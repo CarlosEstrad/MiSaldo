@@ -19,7 +19,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
 
 ## Tasks
 
-- [ ] 1. Configuración y validación al arrancar
+- [x] 1. Configuración y validación al arrancar
   - Agregar `SmtpOptions`, `FrontendOptions` y la lectura de
     `Cors:AllowedOrigins`, con su validación: modo de seguridad, remitente y URL
     del frontend obligatorios si hay servidor SMTP, `None` prohibido en

@@ -31,10 +31,12 @@ public static class ServiceRegistration
     /// <summary>The signing key as the environment variable <c>JWT__SIGNING_KEY</c> exposes it.</summary>
     public const string SigningKeyEnvironmentKey = "JWT:SIGNING_KEY";
 
-    public static IServiceCollection AddMiSaldoApi(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMiSaldoApi(
+        this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(environment);
 
         var connectionString = configuration.GetConnectionString(ConnectionStringName)
             ?? configuration[ConnectionStringFallbackKey];
@@ -45,6 +47,14 @@ public static class ServiceRegistration
         }
 
         var jwtOptions = ReadJwtOptions(configuration);
+
+        // Email and web-client settings are checked before anything else is wired,
+        // so a bad deployment fails at startup, not on the first registration.
+        var webClient = WebClientConfiguration.Read(configuration, environment.IsProduction());
+        services.AddSingleton(webClient);
+        services.AddSingleton(webClient.Smtp);
+        services.AddSingleton(webClient.Frontend);
+        services.AddSingleton(webClient.Cors);
         var argon2Options = configuration.GetSection("Argon2").Get<Argon2Options>();
 
         // The current user comes only from the validated access token (RF-AUT-09).

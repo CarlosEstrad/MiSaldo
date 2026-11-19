@@ -20,7 +20,7 @@ else
 
 builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
-builder.Services.AddMiSaldoApi(builder.Configuration);
+builder.Services.AddMiSaldoApi(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
