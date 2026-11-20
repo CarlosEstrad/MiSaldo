@@ -41,16 +41,32 @@ public sealed class ApiTestHost : IDisposable
                     .AddApplicationPart(typeof(WhoAmITestController).Assembly));
                 configure?.Invoke(builder);
             });
-        Client = _factory.CreateClient();
+        Client = CreateClient();
     }
 
+    /// <summary>A client on https://localhost that keeps cookies, like a browser tab.</summary>
     public HttpClient Client { get; }
 
     /// <summary>The application's services, for tests that inspect the host (endpoints, OpenAPI).</summary>
     public IServiceProvider Services => _factory.Services;
 
-    /// <summary>A new client without credentials.</summary>
-    public HttpClient CreateClient() => _factory.CreateClient();
+    /// <summary>
+    /// A new client without credentials on https://localhost (the refresh cookie is
+    /// <c>Secure</c>). Without cookie handling, a test sends the cookie it wants by hand.
+    /// </summary>
+    public HttpClient CreateClient(bool handleCookies = true) => _factory.CreateClient(new WebApplicationFactoryClientOptions
+    {
+        BaseAddress = SessionCookies.BaseAddress,
+        HandleCookies = handleCookies,
+    });
+
+    /// <summary>POSTs to an auth route with exactly this refresh token in the cookie.</summary>
+    public async Task<HttpResponseMessage> PostWithRefreshCookieAsync(string path, string? refreshToken)
+    {
+        using var client = CreateClient(handleCookies: false);
+        using var request = SessionCookies.PostWithRefreshCookie(path, refreshToken);
+        return await client.SendAsync(request, Ct);
+    }
 
     public InMemoryAccountNotifier Notifier => _factory.Services.GetRequiredService<InMemoryAccountNotifier>();
 
@@ -87,7 +103,7 @@ public sealed class ApiTestHost : IDisposable
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
         var tokens = await ReadAsync(login);
 
-        var client = _factory.CreateClient();
+        var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", tokens.GetProperty("accessToken").GetString());
         return new Session(tokens.GetProperty("userId").GetGuid(), email, client);

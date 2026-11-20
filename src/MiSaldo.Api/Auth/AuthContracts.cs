@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MiSaldo.Application.Accounts;
 using MiSaldo.Application.Common;
 namespace MiSaldo.Api.Auth;
 
@@ -38,10 +39,27 @@ public sealed record LoginRequest([Required] string Email, [Required] string Pas
     public override string ToString() => Redaction.Of(nameof(LoginRequest));
 }
 
-/// <summary>Body of <c>POST /auth/refresh</c> and <c>POST /auth/logout</c>.</summary>
-public sealed record RefreshTokenRequest([Required] string RefreshToken)
+/// <summary>
+/// Answer of a successful login or refresh. The refresh token is not here: it
+/// travels in the <see cref="RefreshCookie"/> (RNF-SEG-03). The client keeps the
+/// access token in memory only. <c>SessionExpiresAt</c> is when the refresh
+/// cookie, and with it the session, ends.
+/// </summary>
+public sealed record SessionResponse(
+    Guid UserId,
+    string AccessToken,
+    DateTimeOffset AccessTokenExpiresAt,
+    DateTimeOffset SessionExpiresAt,
+    bool EmailVerified)
 {
-    public override string ToString() => Redaction.Of(nameof(RefreshTokenRequest));
+    public static SessionResponse From(AuthTokens tokens)
+    {
+        ArgumentNullException.ThrowIfNull(tokens);
+        return new SessionResponse(
+            tokens.UserId, tokens.AccessToken, tokens.AccessTokenExpiresAt, tokens.RefreshTokenExpiresAt, tokens.EmailVerified);
+    }
+
+    public override string ToString() => Redaction.Of(nameof(SessionResponse));
 }
 
 /// <summary>Body of <c>POST /auth/forgot-password</c>.</summary>

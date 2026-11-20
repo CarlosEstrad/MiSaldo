@@ -6,8 +6,9 @@ namespace MiSaldo.Api.Auth;
 
 /// <summary>
 /// The public authentication endpoints. They only translate HTTP to the use
-/// cases and back: the rules live in <c>MiSaldo.Application</c>. Responses that
-/// carry tokens are never cached.
+/// cases and back: the rules live in <c>MiSaldo.Application</c>. The refresh
+/// token lives in <see cref="RefreshCookie"/>, never in a body. Responses that
+/// carry tokens or touch the cookie are never cached.
 /// </summary>
 [AllowAnonymous]
 [Route($"{ApiRoutes.V1}/auth")]
@@ -67,35 +68,50 @@ public sealed class AuthController : ApiControllerBase
         return result.IsSuccess ? Accepted() : Failure(result.Error!);
     }
 
-    /// <summary>Signs in and returns an access token and a rotating refresh token.</summary>
+    /// <summary>
+    /// Signs in. The body carries the access token; the rotating refresh token is
+    /// set in the <c>__Secure-misaldo-refresh</c> cookie (HttpOnly, Secure,
+    /// SameSite=Strict, Path=/api/v1/auth).
+    /// </summary>
     [HttpPost("login")]
-    [ProducesResponseType<AuthTokens>(StatusCodes.Status200OK)]
+    [ProducesResponseType<SessionResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login(
         LoginRequest request, [FromServices] LoginHandler handler, CancellationToken cancellationToken)
     {
         var result = await handler.HandleAsync(new LoginCommand(request.Email, request.Password), cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : Failure(result.Error!);
+        return result.IsSuccess ? Session(result.Value) : Failure(result.Error!);
     }
 
-    /// <summary>Exchanges a refresh token for a new pair; the old refresh token stops working.</summary>
+    /// <summary>
+    /// Renews the session with the refresh cookie; no body. The cookie is
+    /// replaced and the old token stops working. A missing, invalid, reused or
+    /// expired cookie gets 401 and is deleted.
+    /// </summary>
     [HttpPost("refresh")]
-    [ProducesResponseType<AuthTokens>(StatusCodes.Status200OK)]
+    [ProducesResponseType<SessionResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Refresh(
-        RefreshTokenRequest request, [FromServices] RefreshSessionHandler handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Refresh([FromServices] RefreshSessionHandler handler, CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(new RefreshSessionCommand(request.RefreshToken), cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : Failure(result.Error!);
+        var result = await handler.HandleAsync(
+            new RefreshSessionCommand(RefreshCookie.Read(Request) ?? string.Empty), cancellationToken);
+        if (result.IsFailure)
+        {
+            RefreshCookie.Delete(Response);
+            return Failure(result.Error!);
+        }
+
+        return Session(result.Value);
     }
 
-    /// <summary>Revokes the refresh token. Always succeeds, even for an unknown token.</summary>
+    /// <summary>Revokes the session of the refresh cookie and deletes it; no body. Always 204.</summary>
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> Logout(
-        RefreshTokenRequest request, [FromServices] LogoutHandler handler, CancellationToken cancellationToken)
+    public async Task<IActionResult> Logout([FromServices] LogoutHandler handler, CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(new LogoutCommand(request.RefreshToken), cancellationToken);
+        var result = await handler.HandleAsync(
+            new LogoutCommand(RefreshCookie.Read(Request) ?? string.Empty), cancellationToken);
+        RefreshCookie.Delete(Response);
         return result.IsSuccess ? NoContent() : Failure(result.Error!);
     }
 
@@ -118,6 +134,19 @@ public sealed class AuthController : ApiControllerBase
     {
         var result = await handler.HandleAsync(
             new ResetPasswordCommand(request.Token, request.NewPassword), cancellationToken);
-        return result.IsSuccess ? NoContent() : Failure(result.Error!);
+        if (result.IsFailure)
+        {
+            return Failure(result.Error!);
+        }
+
+        // Every session was revoked; this browser's cookie goes too (R5.5).
+        RefreshCookie.Delete(Response);
+        return NoContent();
+    }
+
+    private OkObjectResult Session(AuthTokens tokens)
+    {
+        RefreshCookie.Write(Response, tokens.RefreshToken, tokens.RefreshTokenExpiresAt);
+        return Ok(SessionResponse.From(tokens));
     }
 }

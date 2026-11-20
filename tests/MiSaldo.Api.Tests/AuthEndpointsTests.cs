@@ -38,7 +38,7 @@ public sealed class AuthEndpointsTests : IDisposable
                     .AddControllers()
                     .AddApplicationPart(typeof(WhoAmITestController).Assembly));
             });
-        _client = _factory.CreateClient();
+        _client = _factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = SessionCookies.BaseAddress });
     }
 
     public void Dispose()
@@ -81,11 +81,25 @@ public sealed class AuthEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
-    private async Task<JsonElement> LoginAsync(string email, string password = Password)
+    private sealed record Login(JsonElement Body, string RefreshToken);
+
+    private async Task<Login> LoginAsync(string email, string password = Password)
     {
         var response = await PostAsync("login", new { email, password });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return await ReadAsync(response);
+        return new Login(await ReadAsync(response), SessionCookies.RefreshTokenOf(response));
+    }
+
+    /// <summary>Refresh or logout carrying exactly this refresh token in the cookie, from a client without cookies.</summary>
+    private async Task<HttpResponseMessage> WithCookieAsync(string path, string? refreshToken)
+    {
+        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = SessionCookies.BaseAddress,
+            HandleCookies = false,
+        });
+        using var request = SessionCookies.PostWithRefreshCookie($"{AuthBase}/{path}", refreshToken);
+        return await client.SendAsync(request, Ct);
     }
 
     private static async Task<JsonElement> ReadAsync(HttpResponseMessage response)
@@ -108,36 +122,34 @@ public sealed class AuthEndpointsTests : IDisposable
 
         // Before verifying, login works but the token says the email is not verified (RF-AUT-03).
         var unverified = await LoginAsync(email);
-        Assert.False(unverified.GetProperty("emailVerified").GetBoolean());
+        Assert.False(unverified.Body.GetProperty("emailVerified").GetBoolean());
 
         await VerifyAsync(email);
         var tokens = await LoginAsync(email);
-        Assert.True(tokens.GetProperty("emailVerified").GetBoolean());
-        var userId = tokens.GetProperty("userId").GetGuid();
+        Assert.True(tokens.Body.GetProperty("emailVerified").GetBoolean());
+        var userId = tokens.Body.GetProperty("userId").GetGuid();
 
         // The access token opens a private route and the user comes from its sub claim.
-        var whoAmI = await WhoAmIAsync(tokens.GetProperty("accessToken").GetString()!);
+        var whoAmI = await WhoAmIAsync(tokens.Body.GetProperty("accessToken").GetString()!);
         Assert.Equal(HttpStatusCode.OK, whoAmI.StatusCode);
         Assert.Equal(userId, (await ReadAsync(whoAmI)).GetProperty("userId").GetGuid());
 
-        // Refresh rotates: the new pair works, the old refresh token does not.
-        var oldRefresh = tokens.GetProperty("refreshToken").GetString()!;
-        var refreshed = await PostAsync("refresh", new { refreshToken = oldRefresh });
+        // Refresh rotates: the new cookie works, the old refresh token does not.
+        var oldRefresh = tokens.RefreshToken;
+        var refreshed = await WithCookieAsync("refresh", oldRefresh);
         Assert.Equal(HttpStatusCode.OK, refreshed.StatusCode);
-        var newRefresh = (await ReadAsync(refreshed)).GetProperty("refreshToken").GetString()!;
+        var newRefresh = SessionCookies.RefreshTokenOf(refreshed);
         Assert.NotEqual(oldRefresh, newRefresh);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await PostAsync("refresh", new { refreshToken = oldRefresh })).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await WithCookieAsync("refresh", oldRefresh)).StatusCode);
 
         // Reusing the rotated token also closed the session that replaced it.
-        Assert.Equal(HttpStatusCode.Unauthorized, (await PostAsync("refresh", new { refreshToken = newRefresh })).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await WithCookieAsync("refresh", newRefresh)).StatusCode);
 
         // Logout revokes the refresh token.
         var second = await LoginAsync(email);
-        var logout = await PostAsync("logout", new { refreshToken = second.GetProperty("refreshToken").GetString() });
+        var logout = await WithCookieAsync("logout", second.RefreshToken);
         Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
-        Assert.Equal(
-            HttpStatusCode.Unauthorized,
-            (await PostAsync("refresh", new { refreshToken = second.GetProperty("refreshToken").GetString() })).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await WithCookieAsync("refresh", second.RefreshToken)).StatusCode);
     }
 
     [Fact]
@@ -276,9 +288,7 @@ public sealed class AuthEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.NoContent, reset.StatusCode);
 
         // The old session and the old password stop working; the new one works.
-        Assert.Equal(
-            HttpStatusCode.Unauthorized,
-            (await PostAsync("refresh", new { refreshToken = session.GetProperty("refreshToken").GetString() })).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await WithCookieAsync("refresh", session.RefreshToken)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await PostAsync("login", new { email, password = Password })).StatusCode);
         await LoginAsync(email, newPassword);
 
@@ -301,7 +311,7 @@ public sealed class AuthEndpointsTests : IDisposable
     [Fact]
     public async Task Logging_out_with_an_unknown_token_still_succeeds()
     {
-        var response = await PostAsync("logout", new { refreshToken = "never-issued" });
+        var response = await WithCookieAsync("logout", "never-issued");
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 }

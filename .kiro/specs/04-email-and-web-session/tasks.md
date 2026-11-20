@@ -71,7 +71,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     respuesta es igual para correo inexistente, ya verificado o en espera.
   - _Requisitos: R4.1–R4.5_
 
-- [ ] 6. Refresh token en cookie
+- [x] 6. Refresh token en cookie
   - `RefreshCookie` (`__Secure-misaldo-refresh`, `HttpOnly`, `Secure`,
     `SameSite=Strict`, `Path=/api/v1/auth`) y `SessionResponse` sin el refresh
     token.

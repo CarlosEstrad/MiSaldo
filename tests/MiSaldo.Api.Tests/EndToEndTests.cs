@@ -67,8 +67,9 @@ public sealed class EndToEndTests : IDisposable
         var verification = _host.Notifier.LatestEmailVerification(email)!.Token;
         Assert.Equal(HttpStatusCode.NoContent, (await anonymous.PostAsJsonAsync($"{V1}/auth/verify-email", new { token = verification }, Ct)).StatusCode);
 
-        // Sign in; the access token opens the private routes.
+        // Sign in; the access token opens the private routes and the browser keeps the refresh cookie.
         var tokens = await OkJsonAsync(anonymous.PostAsJsonAsync($"{V1}/auth/login", new { email, password = ApiTestHost.Password }, Ct));
+        Assert.False(tokens.TryGetProperty("refreshToken", out _));
         using var client = WithToken(_host.CreateClient(), tokens.GetProperty("accessToken").GetString()!);
         Assert.Equal(email, (await OkJsonAsync(client.GetAsync($"{V1}/profile", Ct))).GetProperty("email").GetString());
 
@@ -87,16 +88,20 @@ public sealed class EndToEndTests : IDisposable
         Assert.Equal("1500000", dashboard.GetProperty("cashOnHand").GetString());
         Assert.Equal("1200000", dashboard.GetProperty("freeMoney").GetString());
 
-        // Refresh rotates the session; the new access token works too.
-        var refreshed = await OkJsonAsync(anonymous.PostAsJsonAsync($"{V1}/auth/refresh",
-            new { refreshToken = tokens.GetProperty("refreshToken").GetString() }, Ct));
+        // Refresh rotates the session with the cookie alone; the new access token works too.
+        var refreshResponse = await anonymous.PostAsync($"{V1}/auth/refresh", null, Ct);
+        Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
+        var refreshToken = SessionCookies.RefreshTokenOf(refreshResponse);
+        var refreshed = await ReadAsync(refreshResponse);
         using var renewed = WithToken(_host.CreateClient(), refreshed.GetProperty("accessToken").GetString()!);
         Assert.Equal("1500000", (await OkJsonAsync(renewed.GetAsync($"{V1}/dashboard", Ct))).GetProperty("cashOnHand").GetString());
 
-        // Sign out: the refresh token is dead.
-        var refreshToken = refreshed.GetProperty("refreshToken").GetString();
-        Assert.Equal(HttpStatusCode.NoContent, (await anonymous.PostAsJsonAsync($"{V1}/auth/logout", new { refreshToken }, Ct)).StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsJsonAsync($"{V1}/auth/refresh", new { refreshToken }, Ct)).StatusCode);
+        // Sign out: the cookie is deleted and its refresh token is dead.
+        var logout = await anonymous.PostAsync($"{V1}/auth/logout", null, Ct);
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.True(SessionCookies.DeletesRefreshCookie(logout));
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsync($"{V1}/auth/refresh", null, Ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await _host.PostWithRefreshCookieAsync($"{V1}/auth/refresh", refreshToken)).StatusCode);
     }
 
     // --- R15.3: CP-07 on every resource ---
@@ -269,10 +274,16 @@ public sealed class EndToEndTests : IDisposable
         secrets.Add(verification);
         await host.Client.PostAsJsonAsync($"{V1}/auth/verify-email", new { token = verification }, Ct);
 
-        var tokens = await ReadAsync(await host.Client.PostAsJsonAsync($"{V1}/auth/login", new { email, password = ApiTestHost.Password }, Ct));
+        var login = await host.Client.PostAsJsonAsync($"{V1}/auth/login", new { email, password = ApiTestHost.Password }, Ct);
+        var tokens = await ReadAsync(login);
         var accessToken = tokens.GetProperty("accessToken").GetString()!;
         secrets.Add(accessToken);
-        secrets.Add(tokens.GetProperty("refreshToken").GetString()!);
+        secrets.Add(SessionCookies.RefreshTokenOf(login));
+
+        // The refresh cookie is rotated and revoked too; its new value must not be logged either.
+        var refresh = await host.Client.PostAsync($"{V1}/auth/refresh", null, Ct);
+        secrets.Add(SessionCookies.RefreshTokenOf(refresh));
+        await host.Client.PostAsync($"{V1}/auth/logout", null, Ct);
 
         using var client = WithToken(host.CreateClient(), accessToken);
         await client.GetAsync($"{V1}/profile", Ct);
