@@ -52,6 +52,21 @@ public sealed class AuthController : ApiControllerBase
         return result.IsSuccess ? NoContent() : Failure(result.Error!);
     }
 
+    /// <summary>
+    /// Sends a new verification email when the account exists and is not verified;
+    /// earlier links stop working. The answer is always 202, whatever the case.
+    /// </summary>
+    [HttpPost("resend-verification")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> ResendVerification(
+        ResendVerificationRequest request, [FromServices] ResendVerificationHandler handler, CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(new ResendVerificationCommand(request.Email), cancellationToken);
+        return result.IsSuccess ? Accepted() : Failure(result.Error!);
+    }
+
     /// <summary>Signs in and returns an access token and a rotating refresh token.</summary>
     [HttpPost("login")]
     [ProducesResponseType<AuthTokens>(StatusCodes.Status200OK)]

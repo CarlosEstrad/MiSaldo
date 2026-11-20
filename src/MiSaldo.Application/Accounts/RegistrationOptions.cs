@@ -32,4 +32,7 @@ public sealed record RegistrationOptions
     public string DefaultCountry { get; init; } = "CO";
 
     public TimeSpan EmailVerificationTokenLifetime { get; init; } = TimeSpan.FromHours(24);
+
+    /// <summary>A new verification email is not sent if the last one is younger than this (R4.4).</summary>
+    public TimeSpan VerificationResendCooldown { get; init; } = TimeSpan.FromSeconds(60);
 }

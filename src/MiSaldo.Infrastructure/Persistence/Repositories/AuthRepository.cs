@@ -27,6 +27,13 @@ public sealed class AuthRepository : IAuthRepository
         _db.OneTimeTokens.FirstOrDefaultAsync(
             t => t.TokenHash == tokenHash && t.Purpose == purpose, cancellationToken);
 
+    public async Task<IReadOnlyList<OneTimeToken>> ListUsableOneTimeTokensAsync(
+        Guid userId, OneTimeTokenPurpose purpose, DateTimeOffset now, CancellationToken cancellationToken = default) =>
+        await _db.OneTimeTokens
+            .Where(t => t.UserId == userId && t.Purpose == purpose && t.ConsumedAt == null && t.ExpiresAt > now)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
+
     public void Add(UserCredential credential) => _db.UserCredentials.Add(credential);
 
     public void Add(RefreshToken refreshToken) => _db.RefreshTokens.Add(refreshToken);

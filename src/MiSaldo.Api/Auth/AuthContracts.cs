@@ -26,6 +26,12 @@ public sealed record VerifyEmailRequest([Required] string Token)
     public override string ToString() => Redaction.Of(nameof(VerifyEmailRequest));
 }
 
+/// <summary>Body of <c>POST /auth/resend-verification</c>.</summary>
+public sealed record ResendVerificationRequest([Required] string Email)
+{
+    public override string ToString() => Redaction.Of(nameof(ResendVerificationRequest));
+}
+
 /// <summary>Body of <c>POST /auth/login</c>.</summary>
 public sealed record LoginRequest([Required] string Email, [Required] string Password)
 {

@@ -61,7 +61,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     el enlace; con el servidor caído no lanza y registra el fallo sin secretos.
   - _Requisitos: R1.1, R1.6, R3.1–R3.3_
 
-- [ ] 5. Reenvío del correo de verificación
+- [x] 5. Reenvío del correo de verificación
   - `ListUsableOneTimeTokensAsync` en el repositorio, `ResendVerificationHandler`
     y `POST /auth/resend-verification` (siempre 202, bajo el límite de
     `/auth/*`).

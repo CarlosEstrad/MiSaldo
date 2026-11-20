@@ -20,6 +20,13 @@ public interface IAuthRepository
     Task<OneTimeToken?> GetOneTimeTokenAsync(
         string tokenHash, OneTimeTokenPurpose purpose, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The user's one-time tokens of a purpose that are still usable (not consumed,
+    /// not expired), newest first. Used to replace them when a new one is issued.
+    /// </summary>
+    Task<IReadOnlyList<OneTimeToken>> ListUsableOneTimeTokensAsync(
+        Guid userId, OneTimeTokenPurpose purpose, DateTimeOffset now, CancellationToken cancellationToken = default);
+
     void Add(UserCredential credential);
 
     void Add(RefreshToken refreshToken);

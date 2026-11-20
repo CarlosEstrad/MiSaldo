@@ -119,6 +119,7 @@ public static class ServiceRegistration
 
         services.AddScoped<RegisterUserHandler>();
         services.AddScoped<VerifyEmailHandler>();
+        services.AddScoped<ResendVerificationHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<RefreshSessionHandler>();
         services.AddScoped<LogoutHandler>();
