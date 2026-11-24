@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "MiSaldo local (admin)",
+      "Group": "MiSaldo",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "misaldo",
+      "Username": "misaldo_admin",
+      "SSLMode": "prefer",
+      "Comment": "Admin connection: NOT restricted by RLS. The password is asked on the first connect and is not stored here."
+    }
+  }
+}

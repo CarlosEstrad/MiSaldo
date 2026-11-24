@@ -106,7 +106,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     contraseña SMTP no aparecen).
   - _Requisitos: R10.1, R10.2, R10.6, R1.6, R3.1_
 
-- [ ] 9. Entorno local con Docker Compose
+- [x] 9. Entorno local con Docker Compose
   - `docker-compose.dev.yml` con PostgreSQL (`postgres:17-alpine`, volumen),
     Mailpit y pgAdmin (volumen, `servers.json` con la conexión de
     administración), `restart: unless-stopped` y puertos solo en `127.0.0.1`.
