@@ -119,7 +119,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     datos siguen tras reiniciar los contenedores.
   - _Requisitos: R8.1–R8.3, R8.5–R8.8_
 
-- [ ] 10. Documentación y configuración
+- [x] 10. Documentación y configuración
   - `.env.example`: SMTP, URL del frontend, orígenes CORS, variables del entorno
     local y la clave JWT fija.
   - README:

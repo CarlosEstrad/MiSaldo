@@ -58,6 +58,11 @@ public sealed class AuthController : ApiControllerBase
     /// earlier links stop working. The answer is always 202, whatever the case.
     /// </summary>
     [HttpPost("resend-verification")]
+    [EndpointSummary("Resend the email verification link")]
+    [EndpointDescription(
+        "Sends a new verification email when the account exists and is not verified yet; earlier links stop working. " +
+        "Nothing is sent if the last verification email is less than a minute old. The answer is always 202 with no body, " +
+        "whether or not the account exists or is verified, so it reveals nothing. Under the strict /auth rate limit.")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
@@ -74,6 +79,12 @@ public sealed class AuthController : ApiControllerBase
     /// SameSite=Strict, Path=/api/v1/auth).
     /// </summary>
     [HttpPost("login")]
+    [EndpointSummary("Sign in")]
+    [EndpointDescription(
+        "The body returns the access token (keep it in memory only), its expiry, the session expiry and whether the email is verified. " +
+        "The refresh token is NOT in the body: it is set in the " + RefreshCookie.Name + " cookie " +
+        "(HttpOnly, Secure, SameSite=Strict, Path=" + RefreshCookie.Path + ", Max-Age = session lifetime). " +
+        "Browsers must send requests with credentials so the cookie is stored.")]
     [ProducesResponseType<SessionResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login(
@@ -89,6 +100,12 @@ public sealed class AuthController : ApiControllerBase
     /// expired cookie gets 401 and is deleted.
     /// </summary>
     [HttpPost("refresh")]
+    [EndpointSummary("Renew the session with the refresh cookie")]
+    [EndpointDescription(
+        "No body: the refresh token is read from the " + RefreshCookie.Name + " cookie. On success the cookie is replaced " +
+        "(the old token stops working) and the body returns a new access token. A missing, invalid, reused or expired cookie " +
+        "gets 401 auth.invalid_refresh_token and the cookie is deleted; reusing a rotated token closes every session of the user. " +
+        "A request whose Origin is neither an allowed origin nor the API's own gets 403 auth.origin_not_allowed and changes nothing.")]
     [SameOriginGuard]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<SessionResponse>(StatusCodes.Status200OK)]
@@ -108,6 +125,10 @@ public sealed class AuthController : ApiControllerBase
 
     /// <summary>Revokes the session of the refresh cookie and deletes it; no body. Always 204.</summary>
     [HttpPost("logout")]
+    [EndpointSummary("Sign out")]
+    [EndpointDescription(
+        "No body: revokes the session of the " + RefreshCookie.Name + " cookie and deletes the cookie. Always 204, even without a cookie. " +
+        "A request whose Origin is neither an allowed origin nor the API's own gets 403 auth.origin_not_allowed and changes nothing.")]
     [SameOriginGuard]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -131,6 +152,10 @@ public sealed class AuthController : ApiControllerBase
 
     /// <summary>Sets a new password with the recovery token and closes every active session.</summary>
     [HttpPost("reset-password")]
+    [EndpointSummary("Set a new password with the recovery token")]
+    [EndpointDescription(
+        "The token comes from the link in the recovery email and works once. On success every session of the user is closed " +
+        "and the " + RefreshCookie.Name + " cookie of this browser is deleted.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword(
