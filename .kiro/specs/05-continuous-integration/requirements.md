@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Este spec es la quinta etapa. MiSaldo ya tiene cerca de 500 pruebas automáticas
+Este spec es la quinta etapa. MiSaldo ya tiene más de 600 pruebas automáticas
 (dominio, aplicación, infraestructura y API), pero solo se ejecutan cuando
 alguien las corre a mano. RNF-MAN-04 exige que se compile y se pruebe todo en
 cada cambio. Este spec agrega ese pipeline en GitHub Actions, donde ya vive el
@@ -17,8 +17,7 @@ el repositorio (RNF-SEG-08).
 
 **Depende de:** spec 04 (las pruebas con Mailpit deben correr en el pipeline).
 
-**Estado:** solo requisitos. El diseño y las tareas se escriben al iniciar esta
-etapa.
+**Estado:** requisitos, diseño (`design.md`) y tareas (`tasks.md`) listos.
 
 **Alcance:** pipeline de compilación y pruebas (incluidas las que usan Docker),
 cobertura con umbrales, análisis de dependencias vulnerables, búsqueda de
