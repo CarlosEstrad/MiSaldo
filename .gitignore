@@ -8,6 +8,7 @@ obj/
 # Test / coverage results
 [Tt]est[Rr]esults/
 coverage/
+coverage-report/
 *.coverage
 *.coverage.xml
 *.cobertura.xml

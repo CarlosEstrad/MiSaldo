@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Code coverage for every test project (spec 05, R2). Only the assemblies that
+  RNF-MAN-03 sets minimums for are measured; their minimums live in
+  scripts/ci/Test-Coverage.ps1.
+
+  Usage: see "Cobertura" in the README (dotnet test with this file as settings,
+  then ReportGenerator and scripts/ci/Test-Coverage.ps1).
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[MiSaldo.Domain]*,[MiSaldo.Application]*</Include>
+          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

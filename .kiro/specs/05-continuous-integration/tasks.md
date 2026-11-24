@@ -21,7 +21,7 @@ necesita que el usuario haga **push** a `dev`.
 
 ## Tasks
 
-- [ ] 1. 🐳 Cobertura con umbrales
+- [x] 1. 🐳 Cobertura con umbrales
   - Agregar `coverage.runsettings` (Domain y Application, formato Cobertura) y
     `dotnet-reportgenerator-globaltool` fijado en `dotnet-tools.json`.
   - `scripts/ci/Test-Coverage.ps1`: lee `Summary.json` y compara cada
