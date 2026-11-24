@@ -34,7 +34,7 @@ necesita que el usuario haga **push** a `dev`.
     mayor que el medido.
   - _Requisitos: R2.1–R2.3_
 
-- [ ] 2. Resumen de las pruebas
+- [x] 2. Resumen de las pruebas
   - `scripts/ci/Write-TestSummary.ps1`: totales por proyecto desde los `.trx` y
     cada prueba fallida con la primera línea de su mensaje; escribe en
     `$GITHUB_STEP_SUMMARY` si existe y en la consola siempre.

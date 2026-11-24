@@ -73,7 +73,8 @@ foreach ($name in $minimums.Keys) {
 $rows | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
 
 if ($env:GITHUB_STEP_SUMMARY) {
-  $lines = @('### Line coverage (RNF-MAN-03)', '', '| Assembly | Covered lines | Measured | Minimum | Result |', '|---|---|---|---|---|')
+  # Leading blank line: other steps append their own sections to the same summary.
+  $lines = @('', '### Line coverage (RNF-MAN-03)', '', '| Assembly | Covered lines | Measured | Minimum | Result |', '|---|---|---|---|---|')
   foreach ($row in $rows) {
     $result = $(if ($row.Result -eq 'ok') { 'ok' } else { '**FAIL**' })
     $lines += "| $($row.Assembly) | $($row.Covered) | $($row.Measured) | $($row.Minimum) | $result |"
