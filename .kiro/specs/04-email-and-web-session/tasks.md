@@ -135,7 +135,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
   - OpenAPI: el endpoint de reenvío y la cookie de refresh documentados.
   - _Requisitos: R8.4, R8.9, R8.10, R9.1–R9.3_
 
-- [ ] 11. Cierre
+- [x] 11. Cierre
   - Verificar la suite completa (dominio, aplicación, infraestructura y API) en
     verde.
   - Confirmar que no quedan secretos en el repositorio ni en los logs.

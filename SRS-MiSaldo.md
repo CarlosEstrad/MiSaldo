@@ -4,10 +4,10 @@
 | Campo | Valor |
 |---|---|
 | Producto | MiSaldo |
-| Versión del documento | 0.4 |
+| Versión del documento | 0.5 |
 | Estado | **EN PROCESO** |
 | Autor / Product Manager | Carlos Alberto Estrada Valle |
-| Fecha | 2026-11-19 |
+| Fecha | 2026-11-24 |
 | Base | Prompt maestro MiSaldo + decisiones tomadas en conversación |
 
 > **Regla de oro para quien implemente (persona o herramienta):** solo se construye lo que está en este documento y en la fase indicada. Si algo no está especificado, **se pregunta; no se inventa**.
@@ -502,3 +502,4 @@ Cada una trae una propuesta. Si la propuesta es aceptable, basta con aprobarla.
 | 0.2 | 2026-10-26 | Resolución de las decisiones D-01 a D-12. D-01 rechazada (periodos creados por el usuario, no automáticamente). D-05 ajustada: el pago de crédito cuenta como gasto del periodo y el ahorro se muestra en su propio apartado. D-06 reforzada: los créditos nunca tendrán intereses. D-10 cambiada: el aporte de ahorro no puede superar el dinero disponible. D-12 ajustada: al eliminar la cuenta se conserva el motivo y el autor del movimiento. Autor/PM y estado del documento definidos. |
 | 0.3 | 2026-11-19 | **Autenticación propia en lugar de Amazon Cognito** (afecta la decisión 4, RF-AUT-01 y RF-AUT-04): al no haber credenciales de AWS, el backend guarda el hash de la contraseña (Argon2id) y los refresh tokens rotativos en la base, y firma sus propios JWT (HS256, clave en `JWT__SIGNING_KEY`). Todo queda detrás de `ITokenService`, `IPasswordHasher` e `ICurrentUser` para poder migrar a Cognito sin reescribir los casos de uso. El envío de correo (SES) queda para una fase posterior; mientras tanto los tokens de verificación y recuperación se entregan por un canal de desarrollo. Además: los pagos de gastos son inmutables y no se editan ni eliminan (prevalece RN-M08 sobre RF-GAS-06 hasta que existan los ajustes); un gasto con pagos no se elimina; un periodo cerrado conserva sus cifras y no acepta cambios en sus movimientos (RN-P04); cada monto guarda su moneda. Detalle en `.kiro/specs/03-api-and-authentication`. |
 | 0.4 | 2026-11-19 | Nueva decisión D-13: correos transaccionales por SMTP con Mailpit en desarrollo, Gmail dedicado opcional para pruebas y dominio propio con proveedor transaccional en producción; el dominio se adquiere al preparar el despliegue. |
+| 0.5 | 2026-11-24 | **Cambio de contrato de la sesión web** (afecta RF-AUT-04, RF-AUT-05, RNF-SEG-02 y RNF-SEG-03): el refresh token deja de viajar en el cuerpo de la respuesta. El login y el refresh lo entregan en la cookie `__Secure-misaldo-refresh` (`HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/v1/auth`, con la vigencia de la sesión); el cuerpo conserva el access token, que el cliente guarda solo en memoria. `/auth/refresh` y `/auth/logout` ya no reciben cuerpo y leen la cookie; la cookie se borra al cerrar sesión, al fallar un refresh y al restablecer la contraseña. Refresh y logout rechazan con 403 una petición cuyo `Origin` no sea un origen permitido, y CORS solo concede permiso, con credenciales, a los orígenes configurados. No hay clientes todavía, así que el cambio no rompe a nadie; la app móvil (F4) tendrá su propio modo de sesión con almacenamiento seguro. Además, conforme a D-13, los correos de verificación y recuperación ya se envían por SMTP en el idioma del usuario (el canal de desarrollo de la v0.3 queda solo para pruebas) y se agrega `POST /auth/resend-verification` para pedir un nuevo enlace. Detalle en `.kiro/specs/04-email-and-web-session`. |
