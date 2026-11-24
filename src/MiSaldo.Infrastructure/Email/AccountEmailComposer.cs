@@ -77,13 +77,15 @@ public sealed class AccountEmailComposer
     /// </summary>
     private static string ValidFor(TimeSpan remaining, IReadOnlyDictionary<string, string> strings)
     {
-        if (remaining >= TimeSpan.FromHours(1))
+        // Whole minutes first: the token is created a moment before the email, so a
+        // one-hour link has a few milliseconds less than an hour left and must still say "1 hour".
+        var minutes = Math.Max(1, (int)Math.Round(remaining.TotalMinutes, MidpointRounding.AwayFromZero));
+        if (minutes >= 60)
         {
-            var hours = (int)Math.Round(remaining.TotalHours, MidpointRounding.AwayFromZero);
+            var hours = (int)Math.Round(minutes / 60.0, MidpointRounding.AwayFromZero);
             return $"{hours.ToString(CultureInfo.InvariantCulture)} {strings[hours == 1 ? "hour" : "hours"]}";
         }
 
-        var minutes = Math.Max(1, (int)Math.Round(remaining.TotalMinutes, MidpointRounding.AwayFromZero));
         return $"{minutes.ToString(CultureInfo.InvariantCulture)} {strings[minutes == 1 ? "minute" : "minutes"]}";
     }
 

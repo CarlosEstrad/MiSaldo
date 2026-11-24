@@ -39,6 +39,23 @@ public class AccountEmailComposerTests
         Assert.Contains($"<title>{System.Net.WebUtility.HtmlEncode(subject)}</title>", email.Html, StringComparison.Ordinal);
     }
 
+    // The token is created a moment before the email is composed, so a little less
+    // than the full lifetime is left; the email must still state the round figure.
+    [Theory]
+    [InlineData("en", 3600 - 1, "1 hour")]
+    [InlineData("es", 3600 - 1, "1 hora")]
+    [InlineData("en", 24 * 3600 - 1, "24 hours")]
+    [InlineData("en", 59 * 60 + 29, "59 minutes")]
+    [InlineData("en", 89 * 60 + 29, "1 hour")]
+    [InlineData("en", 90 * 60, "2 hours")]
+    [InlineData("en", 20, "1 minute")]
+    public void The_validity_is_stated_in_whole_minutes_or_hours(string language, int secondsLeft, string expected)
+    {
+        var email = Composer().Compose(AccountEmailKind.PasswordReset, Message(language, TimeSpan.FromSeconds(secondsLeft)));
+        var phrase = language == "es" ? "vence en" : "expires in";
+        Assert.Contains($"{phrase} {expected}.", email.Text, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void The_links_point_to_the_frontend_pages_that_consume_the_tokens()
     {

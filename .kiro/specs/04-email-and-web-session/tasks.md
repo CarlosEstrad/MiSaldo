@@ -95,7 +95,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     sesión sigue válida.
   - _Requisitos: R6.1, R6.2, R7.1, R7.3–R7.5, R10.4_
 
-- [ ] 8. 🐳 Suite de extremo a extremo con Mailpit
+- [x] 8. 🐳 Suite de extremo a extremo con Mailpit
   - El registro en español envía el correo; la prueba lo lee de Mailpit, sigue
     el enlace y la cuenta queda verificada.
   - El registro en inglés y la recuperación en inglés envían los correos en

@@ -99,6 +99,29 @@ public sealed class MailpitClient(HttpClient http)
         }
     }
 
+    /// <summary>Waits until an email to <paramref name="address"/> with this exact subject arrives and returns it in full.</summary>
+    public async Task<MailpitMessage> WaitForMessageAsync(
+        string address, string subject, CancellationToken cancellationToken, TimeSpan? timeout = null)
+    {
+        var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(15));
+        while (true)
+        {
+            var found = (await SearchToAsync(address, cancellationToken))
+                .FirstOrDefault(m => string.Equals(m.Subject, subject, StringComparison.Ordinal));
+            if (found is not null)
+            {
+                return await GetAsync(found.Id, cancellationToken);
+            }
+
+            if (DateTime.UtcNow > deadline)
+            {
+                throw new TimeoutException($"No email \"{subject}\" to {address} arrived in Mailpit.");
+            }
+
+            await Task.Delay(200, cancellationToken);
+        }
+    }
+
     /// <summary>The emails sent to <paramref name="address"/>, newest first.</summary>
     public async Task<IReadOnlyList<MailpitSummary>> SearchToAsync(string address, CancellationToken cancellationToken)
     {
