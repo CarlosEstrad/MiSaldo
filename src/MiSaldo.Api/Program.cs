@@ -28,6 +28,9 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+// Before authentication, so a preflight never needs a token (design E12).
+app.UseCors(CorsSetup.PolicyName);
+
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();

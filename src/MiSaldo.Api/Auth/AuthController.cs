@@ -89,6 +89,8 @@ public sealed class AuthController : ApiControllerBase
     /// expired cookie gets 401 and is deleted.
     /// </summary>
     [HttpPost("refresh")]
+    [SameOriginGuard]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<SessionResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Refresh([FromServices] RefreshSessionHandler handler, CancellationToken cancellationToken)
@@ -106,6 +108,8 @@ public sealed class AuthController : ApiControllerBase
 
     /// <summary>Revokes the session of the refresh cookie and deletes it; no body. Always 204.</summary>
     [HttpPost("logout")]
+    [SameOriginGuard]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout([FromServices] LogoutHandler handler, CancellationToken cancellationToken)
     {

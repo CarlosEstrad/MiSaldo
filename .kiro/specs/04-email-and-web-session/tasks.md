@@ -84,7 +84,7 @@ pruebas pasan. Las tareas marcadas con 🐳 necesitan **Docker corriendo**
     cookie borrada.
   - _Requisitos: R5.1–R5.6, R6.3, R10.3, R10.6_
 
-- [ ] 7. Protección de origen y CORS
+- [x] 7. Protección de origen y CORS
   - `SameOriginGuard` en refresh y logout (403 `auth.origin_not_allowed` con un
     `Origin` ajeno; sin `Origin` se acepta).
   - Política CORS con los orígenes configurados, credenciales, métodos y

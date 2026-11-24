@@ -56,6 +56,7 @@ public static class ServiceRegistration
         services.AddSingleton(webClient.Smtp);
         services.AddSingleton(webClient.Frontend);
         services.AddSingleton(webClient.Cors);
+        services.AddMiSaldoCors(webClient.Cors);
         var argon2Options = configuration.GetSection("Argon2").Get<Argon2Options>();
 
         // The current user comes only from the validated access token (RF-AUT-09).
