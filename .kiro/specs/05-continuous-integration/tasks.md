@@ -86,7 +86,7 @@ necesita que el usuario haga **push** a `dev`.
     los scripts ya probados en las tareas 1 a 5.
   - _Requisitos: R1.1–R1.6, R6.1–R6.3_
 
-- [ ] 7. Dependabot
+- [x] 7. Dependabot
   - `.github/dependabot.yml`: `nuget` y `github-actions`, semanal, hacia `dev`,
     con grupos (EF Core, ASP.NET Core, xUnit, Testcontainers).
   - Verificación: el archivo valida contra el esquema de Dependabot.

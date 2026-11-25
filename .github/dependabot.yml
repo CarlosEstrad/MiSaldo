@@ -1,0 +1,66 @@
+# Dependency updates (spec 05, R3.3). Every week Dependabot opens pull
+# requests against dev; the CI checks each one like any other change.
+#
+# Security alerts and security updates are switched on in the repository
+# settings, not here (see "Integración continua" in the README).
+
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    ignore:
+      # These follow the .NET runtime: a new major only arrives with a new
+      # TargetFramework, which is a planned change, not a weekly update.
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Npgsql.EntityFrameworkCore.PostgreSQL"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # EF Core and its PostgreSQL provider must move together: mismatched
+      # versions fail at run time (missing Relational assembly).
+      ef-core:
+        patterns:
+          - "Microsoft.EntityFrameworkCore*"
+          - "Npgsql.EntityFrameworkCore.PostgreSQL"
+      aspnet-core:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+      identity-model:
+        patterns:
+          - "Microsoft.IdentityModel.*"
+      xunit:
+        patterns:
+          - "xunit*"
+      testcontainers:
+        patterns:
+          - "Testcontainers*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+    groups:
+      # The workflow pins every action by SHA; Dependabot updates the SHA and
+      # the version comment together.
+      github-actions:
+        patterns:
+          - "*"
