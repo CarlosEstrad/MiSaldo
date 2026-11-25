@@ -54,7 +54,7 @@ necesita que el usuario haga **push** a `dev`.
     vulnerabilidad alta falla y con una moderada solo avisa.
   - _Requisitos: R3.1, R3.2_
 
-- [ ] 4. 🐳 Búsqueda de secretos
+- [x] 4. 🐳 Búsqueda de secretos
   - `.gitleaks.toml`: reglas por defecto y excepciones por valor, cada una
     comentada (los `change_me_*` de `.env.example` y las contraseñas fijas de
     los contenedores de prueba).

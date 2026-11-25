@@ -1,0 +1,52 @@
+# Secret scanning for MiSaldo (spec 05, R4; RNF-SEG-08).
+#
+#   docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
+#     git /repo --config /repo/.gitleaks.toml --redact --no-banner
+#
+# The pipeline scans the whole history with this file and prints findings with
+# the value redacted.
+#
+# HOW TO ADD AN EXCEPTION (read before doing it):
+#   - Only for a value that is NOT a credential anywhere: a fixed test value or
+#     a documented placeholder. A real secret is removed and rotated, never
+#     excepted.
+#   - Except the exact value (anchored regex) and, when possible, only in the
+#     file where it lives. Never except a whole folder: a real secret in it
+#     would go unnoticed.
+#   - Write in the description why the value is safe.
+
+title = "MiSaldo"
+
+[extend]
+# Every default gitleaks rule (cloud keys, tokens, private keys, generic API keys...).
+useDefault = true
+
+# Passwords inside connection strings ("Host=...;Password=...;"), which the
+# default rules miss. This is how a real database password would leak here
+# (MISALDO_DB, ConnectionStrings__MiSaldo). Short or low-entropy values
+# (local defaults such as "postgres", placeholders) are left out by the
+# length and entropy limits.
+[[rules]]
+id = "connection-string-password"
+description = "Password in a connection string"
+# Connection strings write "Password=value" with no spaces, after ";" or a
+# quote; C# code such as `password = SomeConstant` does not match.
+regex = '''(?i)(?:^|[;"'])\s*(?:password|pwd)=([^;"'\s<>$]{12,})'''
+secretGroup = 1
+entropy = 3.5
+keywords = ["password", "pwd"]
+
+  # .env.example documents the variables with placeholders, never with real values.
+  [[rules.allowlists]]
+  description = "Placeholders of .env.example (change_me_*)"
+  regexTarget = "secret"
+  regexes = ['''^change_me_[a-z]+$''']
+
+# Fixed key of the API test host. It signs tokens only inside the in-memory
+# test server and is never used outside the tests.
+[[allowlists]]
+description = "Test-only JWT signing key of the API test host"
+condition = "AND"
+paths = ['''^tests/MiSaldo\.Api\.Tests/ApiFactory\.cs$''']
+regexTarget = "secret"
+regexes = ['''^test-signing-key-that-is-long-enough-for-hs256$''']
