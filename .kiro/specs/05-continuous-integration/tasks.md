@@ -103,7 +103,7 @@ necesita que el usuario haga **push** a `dev`.
       Dependabot.
   - _Requisitos: R7.1–R7.3_
 
-- [ ] 9. Cierre en GitHub
+- [x] 9. Cierre en GitHub
   - El usuario hace push a `dev`. Comprobar en GitHub:
     - los tres trabajos en verde;
     - el resumen de pruebas y de cobertura visible;
