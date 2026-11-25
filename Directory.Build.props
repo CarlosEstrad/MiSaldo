@@ -11,4 +11,18 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <!--
+    NuGet audit (RNF-SEG-11, spec 05 R3): every restore checks direct and
+    transitive packages against the security advisories. High (NU1903) and
+    critical (NU1904) stay errors through TreatWarningsAsErrors; low (NU1901)
+    and moderate (NU1902) are reported as warnings without failing.
+    scripts/ci/Test-VulnerablePackages.ps1 lists them all.
+  -->
+  <PropertyGroup>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902</WarningsNotAsErrors>
+  </PropertyGroup>
+
 </Project>

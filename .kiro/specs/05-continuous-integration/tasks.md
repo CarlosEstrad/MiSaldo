@@ -42,7 +42,7 @@ necesita que el usuario haga **push** a `dev`.
     fallida, que debe aparecer por nombre.
   - _Requisitos: R1.5_
 
-- [ ] 3. Dependencias vulnerables
+- [x] 3. Dependencias vulnerables
   - `Directory.Build.props`: `NuGetAuditMode=all`, `NuGetAuditLevel=low` y
     `WarningsNotAsErrors` con `NU1901;NU1902`. Alta y crítica siguen fallando el
     restore; baja y moderada pasan a ser solo avisos.
