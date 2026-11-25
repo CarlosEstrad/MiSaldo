@@ -92,7 +92,7 @@ necesita que el usuario haga **push** a `dev`.
   - Verificación: el archivo valida contra el esquema de Dependabot.
   - _Requisitos: R3.3_
 
-- [ ] 8. Documentación
+- [x] 8. Documentación
   - README:
     - insignia del workflow y qué revisa cada trabajo;
     - cómo ejecutar en local cada revisión: pruebas, cobertura, dependencias
