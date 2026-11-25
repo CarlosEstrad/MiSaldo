@@ -65,7 +65,7 @@ necesita que el usuario haga **push** a `dev`.
     falso se detecta y la salida no muestra el valor.
   - _Requisitos: R4.1–R4.3_
 
-- [ ] 5. Migraciones pendientes
+- [x] 5. Migraciones pendientes
   - Comando `dotnet ef migrations has-pending-model-changes` con la herramienta
     local y el `DesignTimeDbContextFactory` existente.
   - Verificación: pasa con el modelo actual y falla con un cambio de modelo
