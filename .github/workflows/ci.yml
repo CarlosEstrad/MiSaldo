@@ -1,0 +1,204 @@
+# Continuous integration (spec 05). Every push to dev or main and every pull
+# request to them builds, tests and checks the repository. Nothing is deployed
+# and no secret is used. Each check is a script or command that also runs
+# locally; see "Integración continua" in the README.
+#
+# The job names (build-and-test, dependencies, secrets) are the required
+# checks of the main branch ruleset: renaming one means updating the ruleset.
+
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+# Read-only token for every job; no job widens it (R6.1). With the pull_request
+# trigger, a pull request from a fork gets a read-only token and no secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+jobs:
+  build-and-test:
+    name: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET (global.json)
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'global.json', 'dotnet-tools.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      # A high or critical vulnerability fails here (NU1903/NU1904) and names the package.
+      - name: Restore
+        run: dotnet restore MiSaldo.slnx
+
+      # TreatWarningsAsErrors: any warning fails the build (R1.4).
+      - name: Build
+        run: dotnet build MiSaldo.slnx --configuration Release --no-restore
+
+      - name: Check for pending model changes
+        run: >-
+          dotnet ef migrations has-pending-model-changes
+          --project src/MiSaldo.Infrastructure
+          --startup-project src/MiSaldo.Infrastructure
+          --configuration Release
+          --no-build
+
+      # Includes the Testcontainers tests (PostgreSQL and Mailpit); nothing is filtered out (R1.3).
+      - name: Test
+        id: test
+        run: >-
+          dotnet test MiSaldo.slnx
+          --configuration Release
+          --no-build
+          --settings coverage.runsettings
+          --logger trx
+          --results-directory TestResults
+
+      - name: Test summary
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./scripts/ci/Write-TestSummary.ps1 -ResultsDirectory TestResults
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results
+          path: TestResults/**/*.trx
+          if-no-files-found: warn
+          retention-days: 14
+
+      # One cobertura file per test project sits in TestResults/<guid>/; the trx
+      # logger copies some of them deeper, so "**" would read those twice.
+      - name: Coverage report
+        run: >-
+          dotnet reportgenerator
+          "-reports:TestResults/*/coverage.cobertura.xml"
+          "-targetdir:coverage-report"
+          "-reporttypes:Html;Cobertura;JsonSummary;MarkdownSummaryGithub"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-report
+          path: coverage-report
+          if-no-files-found: error
+          retention-days: 14
+
+      # Domain >= 90 %, Application >= 70 % (RNF-MAN-03); the minimums live in the script.
+      - name: Coverage minimums
+        shell: pwsh
+        run: ./scripts/ci/Test-Coverage.ps1 -SummaryJson coverage-report/Summary.json
+
+  dependencies:
+    name: dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET (global.json)
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'global.json', 'dotnet-tools.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore MiSaldo.slnx
+
+      # High or Critical fails; Low and Moderate are only reported (R3.2).
+      - name: Vulnerable packages
+        shell: pwsh
+        run: ./scripts/ci/Test-VulnerablePackages.ps1 -Solution MiSaldo.slnx
+
+  secrets:
+    name: secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      # SHA-256 of gitleaks_8.30.1_linux_x64.tar.gz, from the release's published checksums.
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      # The whole history, so a secret in any commit is found.
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install gitleaks
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" version
+
+      # --redact: findings show file, line, commit and rule, never the value (R4.2).
+      - name: Scan the history for secrets
+        run: >-
+          "$RUNNER_TEMP/gitleaks" git .
+          --config .gitleaks.toml
+          --redact
+          --no-banner
+          --verbose
+          --report-format json
+          --report-path "$RUNNER_TEMP/gitleaks.json"
+
+      - name: Secrets summary
+        if: ${{ failure() }}
+        shell: pwsh
+        run: |
+          $report = Join-Path $env:RUNNER_TEMP 'gitleaks.json'
+          $lines = @('', '### Secrets', '')
+          if (Test-Path $report) {
+            $findings = @(Get-Content $report -Raw | ConvertFrom-Json)
+            $lines += "**$($findings.Count) possible secrets found** (values redacted). Remove and rotate a real one; except only a value that is not a credential (see .gitleaks.toml)."
+            $lines += ''
+            $lines += '| Rule | File | Line | Commit |'
+            $lines += '|---|---|---:|---|'
+            foreach ($f in $findings) { $lines += "| $($f.RuleID) | $($f.File) | $($f.StartLine) | $($f.Commit.Substring(0, 7)) |" }
+          }
+          else {
+            $lines += 'The scan did not run. See the job log.'
+          }
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($lines -join "`n")

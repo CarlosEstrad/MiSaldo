@@ -72,7 +72,7 @@ necesita que el usuario haga **push** a `dev`.
     temporal sin migración, que después se revierte.
   - _Requisitos: R5.1, R5.2_
 
-- [ ] 6. Workflow `ci.yml`
+- [x] 6. Workflow `ci.yml`
   - Trabajos `build-and-test`, `dependencies` y `secrets`, según el diseño:
     - disparadores `push` y `pull_request` a `dev` y `main`;
     - `permissions: contents: read`, `concurrency` y `timeout-minutes`;
